@@ -14,6 +14,7 @@ dist-ssr
 src-tauri/target
 
 # Editor directories and files
+.playwright-cli
 .vscode/*
 !.vscode/extensions.json
 .idea

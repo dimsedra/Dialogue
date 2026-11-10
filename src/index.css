@@ -1,24 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @layer base {
   :root {
     --bg-base: #090a0c;
     --bg-surface: #131417;
+    --bg-subtle: #18191e;
     --border-color: #22242a;
     --text-primary: #f3f4f6;
     --text-muted: #8b8f98;
     --text-subdued: #525660;
     --accent: #3b82f6;
+    --accent-hover: #2563eb;
   }
 
   body {
     background-color: var(--bg-base);
     color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Geist Sans", sans-serif;
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin: 0;
     padding: 0;
     overflow: hidden;
     user-select: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom subtle dark scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #22242a;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #363942;
   }
 }
 
@@ -28,7 +49,7 @@
   --fc-page-bg-color: #090a0c;
   --fc-neutral-bg-color: #131417;
   --fc-neutral-text-color: #8b8f98;
-  --fc-today-bg-color: rgba(59, 130, 246, 0.08);
+  --fc-today-bg-color: rgba(59, 130, 246, 0.06);
   --fc-now-indicator-color: #3b82f6;
   font-family: inherit;
   font-size: 0.8125rem;
@@ -36,6 +57,8 @@
 
 .fc .fc-scrollgrid {
   border-color: #22242a !important;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .fc-theme-standard td,
@@ -45,7 +68,7 @@
 
 .fc .fc-col-header-cell {
   background-color: #131417;
-  padding: 6px 0;
+  padding: 8px 0;
   border-color: #22242a;
 }
 
@@ -53,12 +76,14 @@
   color: #8b8f98;
   font-size: 0.75rem;
   font-weight: 500;
+  letter-spacing: -0.01em;
   text-decoration: none;
 }
 
 .fc .fc-daygrid-day-number {
   color: #8b8f98;
   font-size: 0.75rem;
+  font-family: 'Geist Mono', monospace;
   padding: 4px 6px;
   text-decoration: none;
 }
@@ -71,12 +96,22 @@
 .fc .fc-timegrid-slot-label-cushion {
   color: #525660;
   font-size: 0.7rem;
-  font-family: monospace;
+  font-family: 'Geist Mono', monospace;
+}
+
+.fc .fc-timegrid-slot {
+  height: 2.25rem;
 }
 
 .fc .fc-event {
   border-radius: 4px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+.fc .fc-event:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }

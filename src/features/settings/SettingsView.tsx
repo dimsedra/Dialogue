@@ -72,9 +72,11 @@ export function SettingsView() {
         setApiKey(settings.apiKey);
         setBaseUrl(settings.baseUrl);
         setGlobalShortcut(settings.globalShortcut);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setErrorMessage(`Failed to load settings: ${msg}`);
+      } catch {
+        // In browser / non-Tauri preview, gracefully fallback to default settings
+        setProvider("openai");
+        setModelId("gpt-4o-mini");
+        setGlobalShortcut("CommandOrControl+Shift+Space");
       } finally {
         setIsLoading(false);
       }
