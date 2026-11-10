@@ -120,13 +120,35 @@ export async function runAgentTurn(
 
   const now = input.nowIso ? new Date(input.nowIso) : new Date();
   const weekday = now.toLocaleDateString("en-US", { weekday: "long" });
-  const localIso = now.toISOString();
-  const tzOffset = now.getTimezoneOffset();
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
+  // Compute standard ISO offset, e.g. "+07:00" or "-05:00"
+  const offsetMin = -now.getTimezoneOffset();
+  const sign = offsetMin >= 0 ? "+" : "-";
+  const absMin = Math.abs(offsetMin);
+  const hours = String(Math.floor(absMin / 60)).padStart(2, "0");
+  const mins = String(absMin % 60).padStart(2, "0");
+  const offsetString = `${sign}${hours}:${mins}`;
+
+  // Format local date-time string in ISO 8601 with local timezone offset
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+  const localFormatted = `${y}-${m}-${d}T${hh}:${mm}:${ss}${offsetString}`;
 
   const systemPrompt = `You are Dialogue, a helpful, concise personal organizer assistant.
-Current date and time: ${localIso} (${weekday}, timezone offset: ${tzOffset} minutes).
+Current user local time: ${localFormatted} (${weekday}, Timezone: ${timeZone}, UTC offset: ${offsetString}).
+
+CRITICAL TIME AND DATE RULES:
+1. Relative dates (e.g. "today", "tomorrow", "this Friday") MUST be resolved relative to the current user local time (${localFormatted}).
+2. When creating or updating events, ALWAYS specify startTime and endTime in ISO 8601 format including the user's UTC offset (${offsetString}), for example: "${y}-${m}-${d}T11:00:00${offsetString}". Never use UTC "Z" unless the user explicitly asks for UTC.
+3. If an event duration is not specified by the user, default to 1 hour after startTime.
+
 You are equipped with calendar tools:
-- listEvents: Inspect upcoming and past events and occurrences. Always call listEvents if you need to know what's on the schedule.
+- listEvents: Inspect upcoming and past events and occurrences within a date range [rangeStart, rangeEnd].
 - createEvent: Schedule a new standalone or recurring event.
 - updateEvent: Edit an event or single recurring occurrence.
 - deleteEvent: Remove an event or single recurring occurrence.
