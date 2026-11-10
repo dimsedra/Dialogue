@@ -11,6 +11,11 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.99",
+    "@ai-sdk/google": "^4.0.114",
+    "@ai-sdk/openai": "^4.0.111",
+    "@ai-sdk/openai-compatible": "^3.0.87",
+    "@ai-sdk/react": "^4.0.170",
     "@fullcalendar/core": "~6.1.22",
     "@fullcalendar/daygrid": "~6.1.22",
     "@fullcalendar/interaction": "~6.1.22",
@@ -19,6 +24,7 @@
     "@tauri-apps/api": "^2.2.0",
     "@tauri-apps/plugin-global-shortcut": "^2.2.0",
     "@tauri-apps/plugin-sql": "^2.2.0",
+    "ai": "^7.0.166",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "rrule": "^2.8.1",
