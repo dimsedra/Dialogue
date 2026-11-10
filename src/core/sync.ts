@@ -52,12 +52,18 @@ export interface SyncEventBridge {
 
 const defaultBridge: SyncEventBridge = {
   async emit(event: string, payload: unknown): Promise<void> {
+    if (typeof window === "undefined" || !("__TAURI_INTERNALS__" in window)) {
+      return;
+    }
     await emit(event, payload);
   },
   async listen<T>(
     event: string,
     handler: (event: { payload: T }) => void | Promise<void>
   ): Promise<() => void> {
+    if (typeof window === "undefined" || !("__TAURI_INTERNALS__" in window)) {
+      return () => {};
+    }
     return listen<T>(event, handler);
   },
 };
