@@ -4,13 +4,13 @@ import type { ExecutedCalendarToolSummary } from "../agent/agent.service";
 export const createChatThreadInputSchema = z.object({
   title: z.string().optional(),
 });
-export type CreateChatThreadInput = z.infer<typeof createChatThreadInputSchema>;
+export type CreateChatThreadInput = z.input<typeof createChatThreadInputSchema>;
 
 export const sendMessageInputSchema = z.object({
   threadId: z.string().min(1, "threadId is required"),
   userText: z.string().trim().min(1, "Message text cannot be empty"),
 });
-export type SendMessageInput = z.infer<typeof sendMessageInputSchema>;
+export type SendMessageInput = z.input<typeof sendMessageInputSchema>;
 
 export const promoteExchangeInputSchema = z.object({
   title: z.string().optional(),
@@ -24,7 +24,7 @@ export const promoteExchangeInputSchema = z.object({
     )
     .min(1, "Cannot promote an empty exchange"),
 });
-export type PromoteExchangeInput = z.infer<typeof promoteExchangeInputSchema>;
+export type PromoteExchangeInput = z.input<typeof promoteExchangeInputSchema>;
 
 export interface ChatThread {
   id: string;
