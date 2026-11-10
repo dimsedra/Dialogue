@@ -336,6 +336,39 @@ export function SettingsView() {
           </div>
         </section>
 
+        {/* System Timezone Section */}
+        <section className="bg-[#131417] border border-[#22242a] rounded-xl p-5 space-y-3">
+          <div className="space-y-0.5">
+            <h2 className="text-sm font-semibold text-[#f3f4f6]">
+              System Timezone Sync
+            </h2>
+            <p className="text-xs text-[#8b8f98]">
+              Dialogue automatically synchronizes with your device's current location and local timezone.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between p-3.5 bg-[#090a0c] border border-[#22242a] rounded-lg">
+            <div>
+              <div className="text-sm font-semibold text-[#f3f4f6]">
+                {Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"}
+              </div>
+              <div className="text-xs font-mono text-[#8b8f98] mt-0.5">
+                Current offset: {(() => {
+                  const offsetMin = -new Date().getTimezoneOffset();
+                  const sign = offsetMin >= 0 ? "+" : "-";
+                  const absMin = Math.abs(offsetMin);
+                  const h = String(Math.floor(absMin / 60)).padStart(2, "0");
+                  const m = String(absMin % 60).padStart(2, "0");
+                  return `UTC${sign}${h}:${m}`;
+                })()}
+              </div>
+            </div>
+            <span className="text-xs font-medium text-emerald-400 bg-emerald-950/40 border border-emerald-800 px-2.5 py-1 rounded-md">
+              Active Sync
+            </span>
+          </div>
+        </section>
+
         {/* Save Bar */}
         <div className="flex justify-end pt-1">
           <button

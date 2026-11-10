@@ -84,6 +84,7 @@ export function CalendarView() {
   const [currentView, setCurrentView] = useState<string>("timeGridWeek");
   const [headerTitle, setHeaderTitle] = useState<string>("");
   const [modal, setModal] = useState<EventModalState>(DEFAULT_MODAL_STATE);
+  const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
   const updateHeaderTitle = useCallback(() => {
     const api = calendarRef.current?.getApi();
@@ -413,6 +414,11 @@ export function CalendarView() {
         </div>
 
         <div className="flex items-center space-x-3">
+          {/* Detected Timezone Badge */}
+          <span className="text-xs font-mono text-[#8b8f98] bg-[#090a0c] px-2.5 py-1.5 rounded-lg border border-[#22242a]">
+            {systemTimeZone}
+          </span>
+
           {/* View switcher */}
           <div className="flex items-center border border-[#22242a] rounded-lg overflow-hidden bg-[#090a0c]">
             <button
@@ -462,6 +468,7 @@ export function CalendarView() {
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
+          timeZone="local"
           headerToolbar={false}
           allDaySlot={true}
           slotMinTime="06:00:00"
