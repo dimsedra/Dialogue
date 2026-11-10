@@ -4,11 +4,19 @@ import {
   registerQuickCommandShortcut,
   toggleQuickCommandWindow,
 } from "./core/shortcut";
+import { initDatabase, connectReadWriteDatabase } from "./core/db";
+import { onSyncEvent } from "./core/sync";
 
 export function QuickCommandOverlay() {
   const [query, setQuery] = useState("");
 
   useEffect(() => {
+    try {
+      void connectReadWriteDatabase();
+    } catch {
+      // Running in non-Tauri preview mode
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         try {
@@ -65,6 +73,7 @@ export function MainWindowShell() {
 
   useEffect(() => {
     try {
+      void initDatabase();
       void registerQuickCommandShortcut(
         "CommandOrControl+Shift+Space",
         toggleQuickCommandWindow
@@ -72,6 +81,21 @@ export function MainWindowShell() {
     } catch {
       // Non-Tauri environment
     }
+
+    let unlistenNavigation: (() => void) | undefined;
+    void onSyncEvent("navigation:requested", (payload) => {
+      setActiveTab(payload.tab);
+    })
+      .then((unlisten) => {
+        unlistenNavigation = unlisten;
+      })
+      .catch(() => {
+        // Non-Tauri environment
+      });
+
+    return () => {
+      unlistenNavigation?.();
+    };
   }, []);
 
   return (
