@@ -7,6 +7,8 @@ import {
 import { initDatabase, connectReadWriteDatabase } from "./core/db";
 import { onSyncEvent } from "./core/sync";
 import { CalendarView } from "./features/calendar/CalendarView";
+import { SettingsView } from "./features/settings/SettingsView";
+import { getAppSettings } from "./features/settings/settings.service";
 
 export function QuickCommandOverlay() {
   const [query, setQuery] = useState("");
@@ -73,15 +75,18 @@ export function MainWindowShell() {
   );
 
   useEffect(() => {
-    try {
-      void initDatabase();
-      void registerQuickCommandShortcut(
-        "CommandOrControl+Shift+Space",
-        toggleQuickCommandWindow
-      );
-    } catch {
-      // Non-Tauri environment
-    }
+    void (async () => {
+      try {
+        await initDatabase();
+        const settings = await getAppSettings();
+        await registerQuickCommandShortcut(
+          settings.globalShortcut,
+          toggleQuickCommandWindow
+        );
+      } catch {
+        // Non-Tauri environment
+      }
+    })();
 
     let unlistenNavigation: (() => void) | undefined;
     void onSyncEvent("navigation:requested", (payload) => {
@@ -165,6 +170,8 @@ export function MainWindowShell() {
       <main className="flex-1 flex flex-col bg-[#090a0c] overflow-hidden">
         {activeTab === "calendar" ? (
           <CalendarView />
+        ) : activeTab === "settings" ? (
+          <SettingsView />
         ) : (
           <>
             <header className="h-10 border-b border-[#22242a] flex items-center px-4 justify-between">
