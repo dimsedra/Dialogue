@@ -46,6 +46,20 @@ export const MIGRATIONS: readonly SqlMigration[] = [
       CREATE INDEX IF NOT EXISTS idx_events_recurring_id ON events (recurring_event_id);
     `,
   },
+  {
+    id: "003_create_app_settings",
+    up: `
+      CREATE TABLE IF NOT EXISTS app_settings (
+        id TEXT PRIMARY KEY,
+        provider TEXT NOT NULL,
+        model_id TEXT NOT NULL,
+        api_key TEXT NOT NULL DEFAULT '',
+        base_url TEXT NOT NULL DEFAULT '',
+        global_shortcut TEXT NOT NULL DEFAULT 'CommandOrControl+Shift+Space',
+        updated_at TEXT NOT NULL
+      );
+    `,
+  },
 ];
 
 let activeDb: SqlExecutor | null = null;
