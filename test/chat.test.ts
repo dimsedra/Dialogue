@@ -124,7 +124,7 @@ describe("BP-CHAT-001: Chat Threads & Ephemeral Promotion Service", () => {
     );
 
     expect(promotedThread.id).toBeDefined();
-    expect(promotedThread.title).toBe("Schedule sync meeting tomorro");
+    expect(promotedThread.title).toBe("Schedule sync meeting tomorrow");
 
     expect(bridge.emitted).toHaveLength(1);
     expect(bridge.emitted[0].event).toBe("chat:promoted");
