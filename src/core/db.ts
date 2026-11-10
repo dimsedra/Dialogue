@@ -23,6 +23,29 @@ export const MIGRATIONS: readonly SqlMigration[] = [
       );
     `,
   },
+  {
+    id: "002_create_calendar_events",
+    up: `
+      CREATE TABLE IF NOT EXISTS events (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        all_day INTEGER NOT NULL DEFAULT 0,
+        color TEXT NOT NULL DEFAULT '#3b82f6',
+        rrule TEXT,
+        exdates TEXT NOT NULL DEFAULT '[]',
+        recurring_event_id TEXT REFERENCES events(id) ON DELETE CASCADE,
+        original_start_time TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_events_time_range ON events (start_time, end_time);
+      CREATE INDEX IF NOT EXISTS idx_events_recurring_id ON events (recurring_event_id);
+    `,
+  },
 ];
 
 let activeDb: SqlExecutor | null = null;
