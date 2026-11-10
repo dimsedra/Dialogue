@@ -35,7 +35,28 @@ const DEFAULT_SETTINGS: AppSettings = {
   updatedAt: "",
 };
 
+const BROWSER_STORAGE_KEY = "dialogue_settings_preview";
+
+function isBrowserPreview(): boolean {
+  return typeof window !== "undefined" && !("__TAURI_INTERNALS__" in window);
+}
+
 export async function getAppSettings(): Promise<AppSettings> {
+  if (isBrowserPreview()) {
+    const raw = localStorage.getItem(BROWSER_STORAGE_KEY);
+    if (raw) {
+      try {
+        return JSON.parse(raw) as AppSettings;
+      } catch {
+        // Fallback to defaults
+      }
+    }
+    return {
+      ...DEFAULT_SETTINGS,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
   const db = getDb();
   const rows = await db.select<AppSettingsRow>(
     "SELECT * FROM app_settings WHERE id = 'singleton'"
@@ -64,6 +85,21 @@ export async function saveAppSettings(
   options: SaveSettingsOptions = {}
 ): Promise<AppSettings> {
   const validated = updateSettingsInputSchema.parse(input);
+  const now = new Date().toISOString();
+
+  if (isBrowserPreview()) {
+    const saved: AppSettings = {
+      provider: validated.provider,
+      modelId: validated.modelId,
+      apiKey: validated.apiKey,
+      baseUrl: validated.baseUrl,
+      globalShortcut: validated.globalShortcut,
+      updatedAt: now,
+    };
+    localStorage.setItem(BROWSER_STORAGE_KEY, JSON.stringify(saved));
+    return saved;
+  }
+
   const db = getDb();
   const current = await getAppSettings();
 
@@ -76,8 +112,6 @@ export async function saveAppSettings(
       toggleQuickCommandWindow
     );
   }
-
-  const now = new Date().toISOString();
 
   await db.execute(
     `INSERT INTO app_settings (id, provider, model_id, api_key, base_url, global_shortcut, updated_at)
