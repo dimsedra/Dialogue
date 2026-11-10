@@ -6,6 +6,7 @@ import {
 } from "./core/shortcut";
 import { initDatabase, connectReadWriteDatabase } from "./core/db";
 import { onSyncEvent } from "./core/sync";
+import { CalendarView } from "./features/calendar/CalendarView";
 
 export function QuickCommandOverlay() {
   const [query, setQuery] = useState("");
@@ -162,14 +163,20 @@ export function MainWindowShell() {
 
       {/* Center Workspace */}
       <main className="flex-1 flex flex-col bg-[#090a0c] overflow-hidden">
-        <header className="h-10 border-b border-[#22242a] flex items-center px-4 justify-between">
-          <span className="text-xs font-medium text-[#8b8f98] capitalize">
-            {activeTab}
-          </span>
-        </header>
-        <div className="flex-1 p-6 flex items-center justify-center text-xs text-[#525660]">
-          Active view: {activeTab}
-        </div>
+        {activeTab === "calendar" ? (
+          <CalendarView />
+        ) : (
+          <>
+            <header className="h-10 border-b border-[#22242a] flex items-center px-4 justify-between">
+              <span className="text-xs font-medium text-[#8b8f98] capitalize">
+                {activeTab}
+              </span>
+            </header>
+            <div className="flex-1 p-6 flex items-center justify-center text-xs text-[#525660]">
+              Active view: {activeTab}
+            </div>
+          </>
+        )}
       </main>
 
       {/* Right Sidebar: Life Organizer (Calendar in v0.1) */}
