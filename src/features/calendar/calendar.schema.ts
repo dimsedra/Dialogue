@@ -98,7 +98,7 @@ export const createEventInputSchema = z
     message: "end_time must be greater than or equal to start_time",
     path: ["endTime"],
   });
-export type CreateEventInput = z.infer<typeof createEventInputSchema>;
+export type CreateEventInput = z.input<typeof createEventInputSchema>;
 
 export const updateEventInputSchema = z
   .object({
@@ -152,7 +152,7 @@ export const updateEventInputSchema = z
       path: ["instanceStartTime"],
     }
   );
-export type UpdateEventInput = z.infer<typeof updateEventInputSchema>;
+export type UpdateEventInput = z.input<typeof updateEventInputSchema>;
 
 export const deleteEventInputSchema = z
   .object({
@@ -179,7 +179,7 @@ export const deleteEventInputSchema = z
       path: ["instanceStartTime"],
     }
   );
-export type DeleteEventInput = z.infer<typeof deleteEventInputSchema>;
+export type DeleteEventInput = z.input<typeof deleteEventInputSchema>;
 
 export const dateRangeQueryInputSchema = z
   .object({
@@ -196,4 +196,4 @@ export const dateRangeQueryInputSchema = z
     message: "rangeEnd must be greater than or equal to rangeStart",
     path: ["rangeEnd"],
   });
-export type DateRangeQueryInput = z.infer<typeof dateRangeQueryInputSchema>;
+export type DateRangeQueryInput = z.input<typeof dateRangeQueryInputSchema>;

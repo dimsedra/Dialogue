@@ -110,25 +110,39 @@ describe("BP-AGENT-002: AI Agent Runner, Tools & Multi-Step Execution", () => {
         callIndex++;
         if (callIndex === 1) {
           // First turn: model calls createEvent tool
+          const inputStr = JSON.stringify({
+            title: "Dentist Appointment",
+            startTime: "2026-11-12T10:00:00.000Z",
+            endTime: "2026-11-12T11:00:00.000Z",
+          });
           return {
             stream: simulateReadableStream({
               initialDelayInMs: 0,
               chunkDelayInMs: 0,
               chunks: [
                 {
+                  type: "tool-input-start",
+                  id: "call_1",
+                  toolName: "createEvent",
+                },
+                {
+                  type: "tool-input-delta",
+                  id: "call_1",
+                  delta: inputStr,
+                },
+                {
+                  type: "tool-input-end",
+                  id: "call_1",
+                },
+                {
                   type: "tool-call",
                   toolCallId: "call_1",
-                  toolCallType: "function",
                   toolName: "createEvent",
-                  args: JSON.stringify({
-                    title: "Dentist Appointment",
-                    startTime: "2026-11-12T10:00:00.000Z",
-                    endTime: "2026-11-12T11:00:00.000Z",
-                  }),
+                  input: inputStr,
                 },
                 {
                   type: "finish",
-                  finishReason: "tool-calls",
+                  finishReason: { unified: "tool-calls", raw: "tool-calls" },
                   usage: {
                     inputTokens: { total: 10 },
                     outputTokens: { total: 20 },
@@ -147,12 +161,21 @@ describe("BP-AGENT-002: AI Agent Runner, Tools & Multi-Step Execution", () => {
             chunkDelayInMs: 0,
             chunks: [
               {
+                type: "text-start",
+                id: "t1",
+              },
+              {
                 type: "text-delta",
+                id: "t1",
                 delta: "I've scheduled your Dentist Appointment for Nov 12 at 10:00 AM.",
               },
               {
+                type: "text-end",
+                id: "t1",
+              },
+              {
                 type: "finish",
-                finishReason: "stop",
+                finishReason: { unified: "stop", raw: "stop" },
                 usage: {
                   inputTokens: { total: 15 },
                   outputTokens: { total: 18 },
