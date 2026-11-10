@@ -46,7 +46,7 @@ export function GlanceableCalendar({
 
       setEvents(instances);
     } catch {
-      // Fallback gracefully if database is still initializing
+      // Fallback gracefully
     } finally {
       setIsLoading(false);
     }
@@ -140,22 +140,22 @@ export function GlanceableCalendar({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#131417] text-[#f3f4f6] select-none">
+    <div className="flex flex-col h-full bg-[#131417] text-[#f3f4f6] select-none font-sans">
       {/* Sidebar Header */}
-      <div className="px-4 py-3.5 border-b border-[#22242a] flex items-center justify-between bg-[#131417]">
+      <div className="h-14 px-4 border-b border-[#22242a] flex items-center justify-between bg-[#131417] shrink-0">
         <div>
-          <h2 className="text-xs font-semibold text-[#f3f4f6] tracking-tight">
+          <h2 className="text-sm font-semibold text-[#f3f4f6] tracking-tight">
             Life Organizer
           </h2>
-          <p className="text-[11px] text-[#8b8f98] font-mono mt-0.5">
+          <p className="text-xs text-[#8b8f98] font-mono mt-0.5">
             {todayDateStr}
           </p>
         </div>
 
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-1.5">
           <button
             onClick={() => setIsQuickAddOpen((prev) => !prev)}
-            className="px-2 py-1 bg-[#1c1e24] hover:bg-[#252830] border border-[#22242a] text-[#f3f4f6] rounded text-[11px] font-medium transition-colors"
+            className="px-2.5 py-1 bg-[#1c1e24] hover:bg-[#252830] border border-[#22242a] text-[#f3f4f6] rounded-md text-xs font-medium transition-colors"
             title="Quick add event"
           >
             {isQuickAddOpen ? "Cancel" : "+ Add"}
@@ -163,10 +163,10 @@ export function GlanceableCalendar({
           {onOpenFullCalendar && (
             <button
               onClick={onOpenFullCalendar}
-              className="p-1.5 text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#1c1e24] rounded text-xs transition-colors"
+              className="p-1.5 text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#1c1e24] rounded-md text-xs transition-colors"
               title="Open full calendar view"
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M4 12L12 4M12 4H6M12 4V10" />
               </svg>
             </button>
@@ -174,10 +174,10 @@ export function GlanceableCalendar({
           {onCloseSidebar && (
             <button
               onClick={onCloseSidebar}
-              className="p-1.5 text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#1c1e24] rounded text-xs transition-colors"
+              className="p-1.5 text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#1c1e24] rounded-md text-xs transition-colors"
               title="Collapse sidebar"
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M6 3L11 8L6 13" />
               </svg>
             </button>
@@ -189,7 +189,7 @@ export function GlanceableCalendar({
       {isQuickAddOpen && (
         <form
           onSubmit={handleQuickAdd}
-          className="p-3 bg-[#090a0c] border-b border-[#22242a] space-y-2"
+          className="p-3.5 bg-[#090a0c] border-b border-[#22242a] space-y-2.5"
         >
           <input
             autoFocus
@@ -197,18 +197,18 @@ export function GlanceableCalendar({
             value={quickTitle}
             onChange={(e) => setQuickTitle(e.target.value)}
             placeholder="Event title..."
-            className="w-full bg-[#131417] border border-[#22242a] rounded px-2.5 py-1.5 text-xs text-[#f3f4f6] placeholder-[#525660] outline-none focus:border-[#3b82f6] transition-colors"
+            className="w-full bg-[#131417] border border-[#22242a] rounded-lg px-3 py-2 text-sm text-[#f3f4f6] placeholder-[#525660] outline-none focus:border-[#3b82f6] transition-colors"
           />
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2.5">
             <input
               type="time"
               value={quickTime}
               onChange={(e) => setQuickTime(e.target.value)}
-              className="bg-[#131417] border border-[#22242a] rounded px-2 py-1 text-xs text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6]"
+              className="bg-[#131417] border border-[#22242a] rounded-lg px-2.5 py-1.5 text-xs text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6]"
             />
             <button
               type="submit"
-              className="flex-1 py-1 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-medium rounded transition-colors"
+              className="flex-1 py-1.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-semibold rounded-lg transition-colors"
             >
               Save Event
             </button>
@@ -217,41 +217,41 @@ export function GlanceableCalendar({
       )}
 
       {/* Upcoming Events List */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3.5 space-y-4">
         {isLoading ? (
-          <div className="text-center py-8 text-xs text-[#525660]">
+          <div className="text-center py-10 text-xs text-[#525660]">
             Loading schedule...
           </div>
         ) : Object.keys(groupedEvents).length === 0 ? (
           <div className="text-center py-12 text-xs text-[#525660] space-y-2">
-            <p>No events in the next 7 days</p>
-            <p className="text-[11px] text-[#525660]">Click "+ Add" to log an event</p>
+            <p className="text-sm font-medium text-[#8b8f98]">No events in the next 7 days</p>
+            <p className="text-xs text-[#525660]">Click "+ Add" to log an event</p>
           </div>
         ) : (
           Object.entries(groupedEvents).map(([dayHeader, dayEvents]) => (
-            <div key={dayHeader} className="space-y-1.5">
-              <div className="text-[10px] font-semibold text-[#8b8f98] uppercase tracking-wider px-1">
+            <div key={dayHeader} className="space-y-2">
+              <div className="text-xs font-semibold text-[#8b8f98] uppercase tracking-wider px-1">
                 {dayHeader}
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {dayEvents.map((ev) => (
                   <div
                     key={ev.id}
-                    className="group flex items-start space-x-2.5 p-2 rounded-md bg-[#090a0c] border border-[#22242a] hover:border-[#363942] transition-colors"
+                    className="group flex items-start space-x-3 p-3 rounded-lg bg-[#090a0c] border border-[#22242a] hover:border-[#363942] transition-colors"
                   >
                     <span
-                      className="w-2 h-2 rounded-full mt-1 shrink-0"
+                      className="w-2.5 h-2.5 rounded-full mt-1 shrink-0"
                       style={{ backgroundColor: ev.color }}
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-[#f3f4f6] truncate">
+                        <span className="text-sm font-medium text-[#f3f4f6] truncate">
                           {ev.title}
                         </span>
                         {ev.isRecurring && (
                           <span
-                            className="text-[10px] text-[#8b8f98] font-mono shrink-0 ml-1"
+                            className="text-[11px] text-[#8b8f98] font-mono shrink-0 ml-1.5"
                             title={
                               ev.isOverride
                                 ? "Modified occurrence"
@@ -262,7 +262,7 @@ export function GlanceableCalendar({
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] font-mono text-[#8b8f98] mt-0.5">
+                      <div className="text-xs font-mono text-[#8b8f98] mt-1">
                         {formatEventTime(ev)}
                       </div>
                     </div>
@@ -275,7 +275,7 @@ export function GlanceableCalendar({
       </div>
 
       {/* Bottom Footer Action */}
-      <div className="px-4 py-2.5 border-t border-[#22242a] bg-[#131417] flex items-center justify-between text-[11px] text-[#525660]">
+      <div className="px-4 py-3 border-t border-[#22242a] bg-[#131417] flex items-center justify-between text-xs text-[#525660] shrink-0">
         <span>{events.length} upcoming events</span>
         {onOpenFullCalendar && (
           <button

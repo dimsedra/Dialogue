@@ -52,12 +52,12 @@
   --fc-today-bg-color: rgba(59, 130, 246, 0.06);
   --fc-now-indicator-color: #3b82f6;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .fc .fc-scrollgrid {
   border-color: #22242a !important;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -68,23 +68,23 @@
 
 .fc .fc-col-header-cell {
   background-color: #131417;
-  padding: 8px 0;
+  padding: 10px 0;
   border-color: #22242a;
 }
 
 .fc .fc-col-header-cell-cushion {
   color: #8b8f98;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 600;
   letter-spacing: -0.01em;
   text-decoration: none;
 }
 
 .fc .fc-daygrid-day-number {
   color: #8b8f98;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-family: 'Geist Mono', monospace;
-  padding: 4px 6px;
+  padding: 6px 8px;
   text-decoration: none;
 }
 
@@ -94,13 +94,13 @@
 }
 
 .fc .fc-timegrid-slot-label-cushion {
-  color: #525660;
-  font-size: 0.7rem;
+  color: #8b8f98;
+  font-size: 0.75rem;
   font-family: 'Geist Mono', monospace;
 }
 
 .fc .fc-timegrid-slot {
-  height: 2.25rem;
+  height: 2.75rem;
 }
 
 .fc .fc-event {

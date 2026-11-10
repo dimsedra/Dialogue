@@ -39,8 +39,8 @@ export function MainWindowShell() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
 
   // Resizable panel dimensions
-  const [leftWidth, setLeftWidth] = useState(240);
-  const [rightWidth, setRightWidth] = useState(340);
+  const [leftWidth, setLeftWidth] = useState(250);
+  const [rightWidth, setRightWidth] = useState(350);
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
 
   const isLeftDraggingRef = useRef(false);
@@ -57,7 +57,7 @@ export function MainWindowShell() {
         setActiveThreadId(all[0].id);
       }
     } catch {
-      // Non-blocking in preview
+      // Graceful fallback
     }
   }, [activeThreadId]);
 
@@ -113,7 +113,7 @@ export function MainWindowShell() {
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       if (!isLeftDraggingRef.current) return;
-      const newWidth = Math.min(360, Math.max(200, startWidth + (moveEvent.clientX - startX)));
+      const newWidth = Math.min(380, Math.max(200, startWidth + (moveEvent.clientX - startX)));
       setLeftWidth(newWidth);
     };
 
@@ -184,29 +184,29 @@ export function MainWindowShell() {
         className="bg-[#131417] border-r border-[#22242a] flex flex-col shrink-0 relative transition-none"
       >
         {/* App Title & Version Header */}
-        <div className="h-12 px-4 border-b border-[#22242a] flex items-center justify-between shrink-0">
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-            <span className="font-semibold text-sm tracking-tight text-[#f3f4f6]">
+        <div className="h-14 px-4 border-b border-[#22242a] flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" />
+            <span className="font-semibold text-base tracking-tight text-[#f3f4f6]">
               Dialogue
             </span>
           </div>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 bg-[#090a0c] text-[#8b8f98] rounded border border-[#22242a]">
+          <span className="text-[11px] font-mono px-2 py-0.5 bg-[#090a0c] text-[#8b8f98] rounded border border-[#22242a]">
             v0.1
           </span>
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="p-2 space-y-1 shrink-0">
+        <nav className="p-3 space-y-1.5 shrink-0">
           <button
             onClick={() => setActiveTab("chat")}
-            className={`w-full flex items-center space-x-2.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`w-full flex items-center space-x-3 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === "chat"
                 ? "bg-[#1c1e24] text-[#f3f4f6] border border-[#22242a]"
                 : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
             }`}
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M2 3h12a1 1 0 011 1v7a1 1 0 01-1 1H5l-3 3V4a1 1 0 011-1z" />
             </svg>
             <span>Chat</span>
@@ -214,13 +214,13 @@ export function MainWindowShell() {
 
           <button
             onClick={() => setActiveTab("calendar")}
-            className={`w-full flex items-center space-x-2.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`w-full flex items-center space-x-3 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === "calendar"
                 ? "bg-[#1c1e24] text-[#f3f4f6] border border-[#22242a]"
                 : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
             }`}
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <rect x="2" y="3" width="12" height="11" rx="1.5" />
               <path d="M2 6.5h12M5 1.5v2.5M11 1.5v2.5" />
             </svg>
@@ -229,13 +229,13 @@ export function MainWindowShell() {
 
           <button
             onClick={() => setActiveTab("settings")}
-            className={`w-full flex items-center space-x-2.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`w-full flex items-center space-x-3 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === "settings"
                 ? "bg-[#1c1e24] text-[#f3f4f6] border border-[#22242a]"
                 : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
             }`}
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="8" cy="8" r="2.5" />
               <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" />
             </svg>
@@ -244,26 +244,26 @@ export function MainWindowShell() {
         </nav>
 
         {/* Divider */}
-        <div className="mx-3 my-1 border-t border-[#22242a]" />
+        <div className="mx-3.5 my-1 border-t border-[#22242a]" />
 
         {/* Conversation Threads Section */}
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="px-3 py-2 flex items-center justify-between shrink-0">
-            <span className="text-[10px] font-semibold text-[#8b8f98] uppercase tracking-wider">
+          <div className="px-3.5 py-2 flex items-center justify-between shrink-0">
+            <span className="text-xs font-semibold text-[#8b8f98] uppercase tracking-wider">
               Conversations
             </span>
             <button
               onClick={handleCreateThread}
-              className="px-1.5 py-0.5 bg-[#1c1e24] hover:bg-[#252830] border border-[#22242a] text-[#f3f4f6] rounded text-[11px] font-medium transition-colors"
+              className="px-2 py-0.5 bg-[#1c1e24] hover:bg-[#252830] border border-[#22242a] text-[#f3f4f6] rounded text-xs font-medium transition-colors"
               title="New Conversation"
             >
               + New
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-2 space-y-1">
+          <div className="flex-1 overflow-y-auto px-2.5 space-y-1">
             {threads.length === 0 ? (
-              <div className="py-6 text-center text-xs text-[#525660]">
+              <div className="py-8 text-center text-xs text-[#525660]">
                 No conversations yet
               </div>
             ) : (
@@ -276,9 +276,9 @@ export function MainWindowShell() {
                       setActiveThreadId(t.id);
                       setActiveTab("chat");
                     }}
-                    className={`group flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs cursor-pointer transition-colors ${
+                    className={`group flex items-center justify-between px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${
                       isActive
-                        ? "bg-[#1c1e24] text-[#f3f4f6] border border-[#22242a]"
+                        ? "bg-[#1c1e24] text-[#f3f4f6] border border-[#22242a] font-medium"
                         : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
                     }`}
                   >
@@ -298,7 +298,7 @@ export function MainWindowShell() {
         </div>
 
         {/* Rail Footer */}
-        <div className="h-10 px-3 border-t border-[#22242a] flex items-center justify-between text-[11px] font-mono text-[#525660] shrink-0">
+        <div className="h-11 px-4 border-t border-[#22242a] flex items-center justify-between text-xs font-mono text-[#525660] shrink-0">
           <span>Quick: ⌘⇧Space</span>
         </div>
 
@@ -345,11 +345,11 @@ export function MainWindowShell() {
         </aside>
       )}
 
-      {/* Uncollapse Button (When right sidebar is collapsed on chat/settings) */}
+      {/* Uncollapse Button */}
       {isRightCollapsed && activeTab !== "calendar" && (
         <button
           onClick={() => setIsRightCollapsed(false)}
-          className="fixed right-3 top-3 z-30 p-2 bg-[#131417] hover:bg-[#1c1e24] border border-[#22242a] text-[#8b8f98] hover:text-[#f3f4f6] rounded-md text-xs shadow-md transition-colors"
+          className="fixed right-4 top-4 z-30 p-2.5 bg-[#131417] hover:bg-[#1c1e24] border border-[#22242a] text-[#8b8f98] hover:text-[#f3f4f6] rounded-lg text-sm shadow-md transition-colors"
           title="Open Life Organizer"
         >
           <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">

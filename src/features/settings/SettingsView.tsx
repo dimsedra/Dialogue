@@ -73,7 +73,7 @@ export function SettingsView() {
         setBaseUrl(settings.baseUrl);
         setGlobalShortcut(settings.globalShortcut);
       } catch {
-        // In browser / non-Tauri preview, gracefully fallback to default settings
+        // Fallback to default in non-Tauri preview environments
         setProvider("openai");
         setModelId("gpt-4o-mini");
         setGlobalShortcut("CommandOrControl+Shift+Space");
@@ -155,7 +155,7 @@ export function SettingsView() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[#090a0c] text-xs text-[#8b8f98]">
+      <div className="flex-1 flex items-center justify-center bg-[#090a0c] text-sm text-[#8b8f98]">
         Loading settings...
       </div>
     );
@@ -164,38 +164,40 @@ export function SettingsView() {
   const selectedProviderConfig = PROVIDERS.find((p) => p.id === provider);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#090a0c] text-[#f3f4f6] overflow-y-auto select-none p-6">
-      <div className="max-w-2xl mx-auto w-full space-y-6">
-        <div>
-          <h1 className="text-base font-semibold text-[#f3f4f6]">Settings</h1>
-          <p className="text-xs text-[#8b8f98] mt-0.5">
+    <div className="flex-1 flex flex-col h-full bg-[#090a0c] text-[#f3f4f6] overflow-y-auto select-none p-8 font-sans">
+      <div className="max-w-2xl mx-auto w-full space-y-7 pb-12">
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold text-[#f3f4f6] tracking-tight">
+            Settings
+          </h1>
+          <p className="text-sm text-[#8b8f98]">
             Configure AI model providers, credentials, and app preferences.
           </p>
         </div>
 
         {errorMessage && (
-          <div className="p-3 bg-red-950/40 border border-red-800 text-red-300 rounded-md text-xs">
+          <div className="p-3.5 bg-red-950/40 border border-red-800 text-red-300 rounded-lg text-sm">
             {errorMessage}
           </div>
         )}
 
         {saveStatus && (
-          <div className="p-3 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded-md text-xs">
+          <div className="p-3.5 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded-lg text-sm font-medium">
             {saveStatus}
           </div>
         )}
 
         {/* AI Provider Section */}
-        <section className="bg-[#131417] border border-[#22242a] rounded-lg p-4 space-y-4">
-          <div>
-            <h2 className="text-xs font-semibold text-[#f3f4f6]">AI Provider</h2>
-            <p className="text-[11px] text-[#8b8f98] mt-0.5">
+        <section className="bg-[#131417] border border-[#22242a] rounded-xl p-5 space-y-5">
+          <div className="space-y-0.5">
+            <h2 className="text-sm font-semibold text-[#f3f4f6]">AI Provider</h2>
+            <p className="text-xs text-[#8b8f98]">
               Select the active model provider for the assistant and quick command.
             </p>
           </div>
 
           {/* Provider Cards */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2.5">
             {PROVIDERS.map((p) => {
               const isSelected = provider === p.id;
               return (
@@ -203,23 +205,23 @@ export function SettingsView() {
                   key={p.id}
                   type="button"
                   onClick={() => handleProviderSelect(p.id)}
-                  className={`text-left p-3 rounded-md border transition-all ${
+                  className={`text-left p-3.5 rounded-lg border transition-all ${
                     isSelected
-                      ? "bg-[#1c1e24] border-[#3b82f6] text-[#f3f4f6]"
+                      ? "bg-[#1c1e24] border-[#3b82f6] text-[#f3f4f6] ring-1 ring-[#3b82f6]/40"
                       : "bg-[#090a0c] border-[#22242a] text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-xs text-[#f3f4f6]">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-semibold text-sm text-[#f3f4f6]">
                       {p.name}
                     </span>
                     {p.isLocal && (
-                      <span className="text-[10px] font-mono px-1 py-0.5 bg-[#131417] text-[#8b8f98] rounded border border-[#22242a]">
+                      <span className="text-[11px] font-mono px-1.5 py-0.5 bg-[#131417] text-[#8b8f98] rounded border border-[#22242a]">
                         Local
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-[#8b8f98] leading-tight">
+                  <p className="text-xs text-[#8b8f98] leading-relaxed">
                     {p.description}
                   </p>
                 </button>
@@ -228,10 +230,10 @@ export function SettingsView() {
           </div>
 
           {/* Provider Specific Inputs */}
-          <div className="space-y-3 pt-2 border-t border-[#22242a]">
+          <div className="space-y-4 pt-3 border-t border-[#22242a]">
             {selectedProviderConfig?.isLocal ? (
-              <div>
-                <label className="block text-xs font-medium text-[#8b8f98] mb-1">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider">
                   Base URL
                 </label>
                 <input
@@ -239,22 +241,22 @@ export function SettingsView() {
                   value={baseUrl}
                   onChange={(e) => setBaseUrl(e.target.value)}
                   placeholder="http://localhost:11434/v1"
-                  className="w-full bg-[#090a0c] border border-[#22242a] rounded px-3 py-1.5 text-xs text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6]"
+                  className="w-full bg-[#090a0c] border border-[#22242a] rounded-lg px-3.5 py-2.5 text-sm text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6] transition-colors"
                 />
-                <p className="text-[11px] text-[#525660] mt-1 font-mono">
+                <p className="text-xs text-[#525660] font-mono">
                   Ollama default: http://localhost:11434/v1 | LM Studio default: http://localhost:1234/v1
                 </p>
               </div>
             ) : (
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-medium text-[#8b8f98]">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider">
                     API Key
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowApiKey((prev) => !prev)}
-                    className="text-[11px] text-[#8b8f98] hover:text-[#f3f4f6]"
+                    className="text-xs text-[#8b8f98] hover:text-[#f3f4f6] transition-colors"
                   >
                     {showApiKey ? "Hide" : "Show"}
                   </button>
@@ -264,13 +266,13 @@ export function SettingsView() {
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder={`Enter your ${selectedProviderConfig?.name} API key`}
-                  className="w-full bg-[#090a0c] border border-[#22242a] rounded px-3 py-1.5 text-xs text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6]"
+                  className="w-full bg-[#090a0c] border border-[#22242a] rounded-lg px-3.5 py-2.5 text-sm text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6] transition-colors"
                 />
               </div>
             )}
 
-            <div>
-              <label className="block text-xs font-medium text-[#8b8f98] mb-1">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider">
                 Model ID
               </label>
               <input
@@ -278,7 +280,7 @@ export function SettingsView() {
                 value={modelId}
                 onChange={(e) => setModelId(e.target.value)}
                 placeholder="e.g. gpt-4o-mini, llama3.2"
-                className="w-full bg-[#090a0c] border border-[#22242a] rounded px-3 py-1.5 text-xs text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6]"
+                className="w-full bg-[#090a0c] border border-[#22242a] rounded-lg px-3.5 py-2.5 text-sm text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6] transition-colors"
               />
             </div>
 
@@ -288,14 +290,14 @@ export function SettingsView() {
                 type="button"
                 disabled={isTesting}
                 onClick={handleTestConnection}
-                className="px-3 py-1.5 bg-[#1c1e24] hover:bg-[#252830] border border-[#22242a] text-[#f3f4f6] rounded text-xs font-medium transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-[#1c1e24] hover:bg-[#252830] border border-[#22242a] text-[#f3f4f6] rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
               >
                 {isTesting ? "Testing..." : "Test Connection"}
               </button>
 
               {testStatus && (
                 <span
-                  className={`text-xs ${
+                  className={`text-xs font-mono ${
                     testStatus.ok ? "text-emerald-400" : "text-red-400"
                   }`}
                 >
@@ -307,18 +309,18 @@ export function SettingsView() {
         </section>
 
         {/* Global Shortcut Section */}
-        <section className="bg-[#131417] border border-[#22242a] rounded-lg p-4 space-y-3">
-          <div>
-            <h2 className="text-xs font-semibold text-[#f3f4f6]">
+        <section className="bg-[#131417] border border-[#22242a] rounded-xl p-5 space-y-4">
+          <div className="space-y-0.5">
+            <h2 className="text-sm font-semibold text-[#f3f4f6]">
               Quick Command Shortcut
             </h2>
-            <p className="text-[11px] text-[#8b8f98] mt-0.5">
+            <p className="text-xs text-[#8b8f98]">
               Global OS keyboard shortcut used to summon and dismiss the floating quick command bar.
             </p>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-[#8b8f98] mb-1">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider">
               Hotkey Accelerator
             </label>
             <input
@@ -326,21 +328,21 @@ export function SettingsView() {
               value={globalShortcut}
               onChange={(e) => setGlobalShortcut(e.target.value)}
               placeholder="CommandOrControl+Shift+Space"
-              className="w-full bg-[#090a0c] border border-[#22242a] rounded px-3 py-1.5 text-xs text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6]"
+              className="w-full bg-[#090a0c] border border-[#22242a] rounded-lg px-3.5 py-2.5 text-sm text-[#f3f4f6] font-mono outline-none focus:border-[#3b82f6] transition-colors"
             />
-            <p className="text-[11px] text-[#525660] mt-1 font-mono">
+            <p className="text-xs text-[#525660] font-mono">
               Default: CommandOrControl+Shift+Space (Cmd+Shift+Space on macOS, Ctrl+Shift+Space on Linux/Windows)
             </p>
           </div>
         </section>
 
         {/* Save Bar */}
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-end pt-1">
           <button
             type="button"
             disabled={isSaving}
             onClick={handleSave}
-            className="px-4 py-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-md text-xs font-medium transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 shadow-md"
           >
             {isSaving ? "Saving..." : "Save Settings"}
           </button>

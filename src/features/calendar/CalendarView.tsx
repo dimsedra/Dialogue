@@ -385,39 +385,39 @@ export function CalendarView() {
   return (
     <div className="flex-1 flex flex-col h-full bg-[#090a0c] text-[#f3f4f6] overflow-hidden select-none">
       {/* Calendar Top Toolbar */}
-      <header className="h-12 border-b border-[#22242a] flex items-center justify-between px-4 bg-[#131417]">
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center border border-[#22242a] rounded-md overflow-hidden bg-[#090a0c]">
+      <header className="h-14 border-b border-[#22242a] flex items-center justify-between px-6 bg-[#131417] shrink-0">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center border border-[#22242a] rounded-lg overflow-hidden bg-[#090a0c]">
             <button
               onClick={handlePrev}
-              className="px-2.5 py-1 text-xs text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e] transition-colors"
+              className="px-3 py-1.5 text-xs text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e] transition-colors"
             >
               ‹
             </button>
             <button
               onClick={handleToday}
-              className="px-2.5 py-1 text-xs text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e] border-x border-[#22242a] transition-colors"
+              className="px-3 py-1.5 text-xs text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e] border-x border-[#22242a] transition-colors font-medium"
             >
               Today
             </button>
             <button
               onClick={handleNext}
-              className="px-2.5 py-1 text-xs text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e] transition-colors"
+              className="px-3 py-1.5 text-xs text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e] transition-colors"
             >
               ›
             </button>
           </div>
-          <h2 className="text-sm font-semibold text-[#f3f4f6] ml-2">
+          <h2 className="text-base font-semibold text-[#f3f4f6] ml-2 tracking-tight">
             {headerTitle}
           </h2>
         </div>
 
         <div className="flex items-center space-x-3">
           {/* View switcher */}
-          <div className="flex items-center border border-[#22242a] rounded-md overflow-hidden bg-[#090a0c]">
+          <div className="flex items-center border border-[#22242a] rounded-lg overflow-hidden bg-[#090a0c]">
             <button
               onClick={() => handleViewChange("dayGridMonth")}
-              className={`px-3 py-1 text-xs font-medium transition-colors ${
+              className={`px-3.5 py-1.5 text-xs font-medium transition-colors ${
                 currentView === "dayGridMonth"
                   ? "bg-[#1c1e24] text-[#f3f4f6]"
                   : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
@@ -427,7 +427,7 @@ export function CalendarView() {
             </button>
             <button
               onClick={() => handleViewChange("timeGridWeek")}
-              className={`px-3 py-1 text-xs font-medium border-x border-[#22242a] transition-colors ${
+              className={`px-3.5 py-1.5 text-xs font-medium border-x border-[#22242a] transition-colors ${
                 currentView === "timeGridWeek"
                   ? "bg-[#1c1e24] text-[#f3f4f6]"
                   : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
@@ -437,7 +437,7 @@ export function CalendarView() {
             </button>
             <button
               onClick={() => handleViewChange("timeGridDay")}
-              className={`px-3 py-1 text-xs font-medium transition-colors ${
+              className={`px-3.5 py-1.5 text-xs font-medium transition-colors ${
                 currentView === "timeGridDay"
                   ? "bg-[#1c1e24] text-[#f3f4f6]"
                   : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
@@ -449,7 +449,7 @@ export function CalendarView() {
 
           <button
             onClick={() => openCreateModal()}
-            className="px-3 py-1 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-medium rounded-md transition-colors"
+            className="px-3.5 py-1.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
           >
             + New Event
           </button>
@@ -514,28 +514,30 @@ export function CalendarView() {
       {/* Event Modal Dialog */}
       {modal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-[460px] bg-[#090a0c] border border-[#22242a] rounded-lg shadow-2xl overflow-hidden flex flex-col">
-            <div className="px-4 py-3 border-b border-[#22242a] bg-[#131417] flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#f3f4f6]">
+          <div className="w-[480px] bg-[#090a0c] border border-[#22242a] rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="px-5 py-4 border-b border-[#22242a] bg-[#131417] flex items-center justify-between">
+              <span className="text-sm font-semibold text-[#f3f4f6]">
                 {modal.mode === "create" ? "Create Event" : "Edit Event"}
               </span>
               <button
                 onClick={() => setModal(DEFAULT_MODAL_STATE)}
-                className="text-[#8b8f98] hover:text-[#f3f4f6] text-sm"
+                className="text-[#8b8f98] hover:text-[#f3f4f6] text-sm p-1"
               >
                 ✕
               </button>
             </div>
 
-            <div className="p-4 space-y-3 text-xs">
+            <div className="p-5 space-y-4 text-xs">
               {modal.error && (
-                <div className="p-2 bg-red-950/40 border border-red-800 text-red-300 rounded text-xs">
+                <div className="p-3 bg-red-950/40 border border-red-800 text-red-300 rounded-lg text-xs leading-relaxed">
                   {modal.error}
                 </div>
               )}
 
               <div>
-                <label className="block text-[#8b8f98] mb-1">Title</label>
+                <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider mb-1.5">
+                  Title
+                </label>
                 <input
                   type="text"
                   value={modal.title}
@@ -543,13 +545,15 @@ export function CalendarView() {
                     setModal((prev) => ({ ...prev, title: e.target.value }))
                   }
                   placeholder="Event title"
-                  className="w-full bg-[#131417] border border-[#22242a] rounded px-2.5 py-1.5 text-[#f3f4f6] outline-none focus:border-[#3b82f6]"
+                  className="w-full bg-[#131417] border border-[#22242a] rounded-lg px-3.5 py-2 text-sm text-[#f3f4f6] outline-none focus:border-[#3b82f6] transition-colors"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#8b8f98] mb-1">Start Time</label>
+                  <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider mb-1.5">
+                    Start Time
+                  </label>
                   <input
                     type="datetime-local"
                     value={modal.startTime}
@@ -559,24 +563,26 @@ export function CalendarView() {
                         startTime: e.target.value,
                       }))
                     }
-                    className="w-full bg-[#131417] border border-[#22242a] rounded px-2 py-1 text-[#f3f4f6] outline-none focus:border-[#3b82f6] text-xs font-mono"
+                    className="w-full bg-[#131417] border border-[#22242a] rounded-lg px-3 py-2 text-xs text-[#f3f4f6] outline-none focus:border-[#3b82f6] font-mono transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-[#8b8f98] mb-1">End Time</label>
+                  <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider mb-1.5">
+                    End Time
+                  </label>
                   <input
                     type="datetime-local"
                     value={modal.endTime}
                     onChange={(e) =>
                       setModal((prev) => ({ ...prev, endTime: e.target.value }))
                     }
-                    className="w-full bg-[#131417] border border-[#22242a] rounded px-2 py-1 text-[#f3f4f6] outline-none focus:border-[#3b82f6] text-xs font-mono"
+                    className="w-full bg-[#131417] border border-[#22242a] rounded-lg px-3 py-2 text-xs text-[#f3f4f6] outline-none focus:border-[#3b82f6] font-mono transition-colors"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center space-x-1.5 cursor-pointer">
+              <div className="flex items-center space-x-5 text-sm">
+                <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={modal.allDay}
@@ -588,11 +594,11 @@ export function CalendarView() {
                     }
                     className="rounded border-[#22242a] bg-[#131417]"
                   />
-                  <span className="text-[#8b8f98]">All-day event</span>
+                  <span className="text-xs text-[#8b8f98]">All-day event</span>
                 </label>
 
                 {modal.mode === "create" && (
-                  <label className="flex items-center space-x-1.5 cursor-pointer">
+                  <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={modal.isRecurring}
@@ -604,7 +610,7 @@ export function CalendarView() {
                       }
                       className="rounded border-[#22242a] bg-[#131417]"
                     />
-                    <span className="text-[#8b8f98]">Repeat</span>
+                    <span className="text-xs text-[#8b8f98]">Repeat</span>
                   </label>
                 )}
               </div>

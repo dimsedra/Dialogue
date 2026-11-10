@@ -5,6 +5,7 @@ import { emitSyncEvent } from "../../core/sync";
 import { runAgentTurn, type ExecutedCalendarToolSummary } from "../agent/agent.service";
 import { promoteQuickExchangeToThread } from "../chat/chat.service";
 import { ProviderNotConfiguredError } from "../settings/settings.schema";
+import { MarkdownContent } from "../chat/MarkdownContent";
 
 interface EphemeralExchange {
   user: string;
@@ -143,7 +144,7 @@ export function QuickCommandView() {
       return (
         <span
           key={idx}
-          className="inline-flex items-center space-x-1 px-2 py-0.5 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded text-[11px] font-mono mr-1.5 mb-1"
+          className="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded text-xs font-mono mr-2 mb-1.5"
         >
           <span className="text-emerald-400 font-bold">✦</span>
           <span>Created:</span>
@@ -159,7 +160,7 @@ export function QuickCommandView() {
       return (
         <span
           key={idx}
-          className="inline-flex items-center space-x-1 px-2 py-0.5 bg-amber-950/40 border border-amber-800 text-amber-300 rounded text-[11px] font-mono mr-1.5 mb-1"
+          className="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-amber-950/40 border border-amber-800 text-amber-300 rounded text-xs font-mono mr-2 mb-1.5"
         >
           <span className="text-amber-400 font-bold">↻</span>
           <span>Updated:</span>
@@ -174,7 +175,7 @@ export function QuickCommandView() {
       return (
         <span
           key={idx}
-          className="inline-flex items-center px-2 py-0.5 bg-rose-950/40 border border-rose-800 text-rose-300 rounded text-[11px] font-mono mr-1.5 mb-1"
+          className="inline-flex items-center px-2.5 py-1 bg-rose-950/40 border border-rose-800 text-rose-300 rounded text-xs font-mono mr-2 mb-1.5"
         >
           <span className="text-rose-400 font-bold mr-1">✕</span>
           <span>Deleted event</span>
@@ -187,7 +188,7 @@ export function QuickCommandView() {
       return (
         <span
           key={idx}
-          className="inline-flex items-center px-2 py-0.5 bg-blue-950/40 border border-blue-800 text-blue-300 rounded text-[11px] font-mono mr-1.5 mb-1"
+          className="inline-flex items-center px-2.5 py-1 bg-blue-950/40 border border-blue-800 text-blue-300 rounded text-xs font-mono mr-2 mb-1.5"
         >
           <span className="text-blue-400 font-bold mr-1">#</span>
           <span>Found {count} event{count === 1 ? "" : "s"}</span>
@@ -200,10 +201,10 @@ export function QuickCommandView() {
 
   return (
     <div className="w-full h-full flex items-center justify-center p-4 bg-transparent select-none font-sans">
-      <div className="w-[660px] bg-[#090a0c] border border-[#22242a] rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[440px]">
+      <div className="w-[680px] bg-[#090a0c] border border-[#22242a] rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[460px]">
         {/* Raycast Search Input Header */}
-        <div className="flex items-center px-4 py-3.5 border-b border-[#22242a] bg-[#131417]">
-          <span className="text-[#3b82f6] mr-3 text-sm font-semibold">✦</span>
+        <div className="flex items-center px-5 py-4 border-b border-[#22242a] bg-[#131417]">
+          <span className="text-[#3b82f6] mr-3 text-base font-semibold">✦</span>
           <input
             ref={inputRef}
             autoFocus
@@ -217,22 +218,22 @@ export function QuickCommandView() {
               }
             }}
             placeholder="Ask AI..."
-            className="flex-1 bg-transparent text-[#f3f4f6] placeholder-[#525660] text-sm outline-none font-sans"
+            className="flex-1 bg-transparent text-[#f3f4f6] placeholder-[#525660] text-base outline-none font-sans"
           />
-          <span className="text-[10px] font-mono text-[#525660] bg-[#090a0c] px-2 py-0.5 rounded border border-[#22242a]">
-            Esc to close
+          <span className="text-xs font-mono text-[#525660] bg-[#090a0c] px-2.5 py-1 rounded border border-[#22242a]">
+            Esc
           </span>
         </div>
 
         {/* Response Body Area */}
-        <div className="p-4 overflow-y-auto flex-1 min-h-[140px] flex flex-col justify-center">
+        <div className="p-5 overflow-y-auto flex-1 min-h-[160px] flex flex-col justify-center">
           {errorMessage ? (
-            <div className="space-y-2.5 p-3.5 bg-red-950/40 border border-red-800 rounded-md text-xs text-red-200">
+            <div className="space-y-3 p-4 bg-red-950/40 border border-red-800 rounded-lg text-sm text-red-200">
               <p>{errorMessage}</p>
               {isProviderUnconfigured && (
                 <button
                   onClick={handleOpenSettingsInApp}
-                  className="px-2.5 py-1 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded text-[11px] font-medium transition-colors"
+                  className="px-3 py-1.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded text-xs font-medium transition-colors"
                 >
                   Configure AI Provider in Settings
                 </button>
@@ -240,26 +241,22 @@ export function QuickCommandView() {
             </div>
           ) : isStreaming ? (
             <div className="space-y-2">
-              <div className="text-xs text-[#f3f4f6] leading-relaxed whitespace-pre-wrap">
-                <span>{streamingText}</span>
-                <span className="inline-block w-1.5 h-3.5 bg-[#3b82f6] ml-1 animate-pulse align-middle" />
-              </div>
+              <MarkdownContent content={streamingText} />
+              <span className="inline-block w-2 h-4 bg-[#3b82f6] ml-1 animate-pulse align-middle" />
             </div>
           ) : activeExchange ? (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {activeExchange.tools.length > 0 && (
                 <div className="flex flex-wrap items-center">
                   {activeExchange.tools.map(renderToolBadge)}
                 </div>
               )}
-              <div className="text-xs text-[#f3f4f6] leading-relaxed whitespace-pre-wrap">
-                {activeExchange.assistant}
-              </div>
+              <MarkdownContent content={activeExchange.assistant} />
             </div>
           ) : (
-            <div className="text-center py-6 text-xs text-[#525660] space-y-1.5">
-              <p className="text-[#8b8f98] font-medium">Ready for fast questions or calendar commands</p>
-              <p className="text-[11px] text-[#525660] font-mono">
+            <div className="text-center py-6 text-sm text-[#525660] space-y-2">
+              <p className="text-[#8b8f98] font-medium text-sm">Ready for fast questions or calendar commands</p>
+              <p className="text-xs text-[#525660] font-mono">
                 "What's on my schedule today?" or "Lunch with team tomorrow at 12pm"
               </p>
             </div>
@@ -267,9 +264,9 @@ export function QuickCommandView() {
         </div>
 
         {/* Bottom Command Bar Footer */}
-        <div className="px-4 py-2.5 bg-[#131417] border-t border-[#22242a] flex items-center justify-between text-[11px] text-[#525660]">
+        <div className="px-5 py-3 bg-[#131417] border-t border-[#22242a] flex items-center justify-between text-xs text-[#525660]">
           <span className="font-medium text-[#8b8f98]">Dialogue Command</span>
-          <div className="flex items-center space-x-3 font-mono">
+          <div className="flex items-center space-x-4 font-mono">
             <span>↵ Run</span>
             {activeExchange && (
               <button
