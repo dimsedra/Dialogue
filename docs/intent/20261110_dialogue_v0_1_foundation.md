@@ -1,7 +1,7 @@
 ---
 title: "Intent: Dialogue v0.1 Foundation"
 type: intent
-last_updated: 2026-11-10
+last_updated: 2026-11-11
 ---
 
 # Intent: Dialogue v0.1 Foundation
@@ -34,3 +34,4 @@ Version 0.1 focuses strictly on proving this core loop: getting the lightweight 
 - **No general-purpose "do everything" agent tools**: No web browsing, arbitrary bash execution, or unrelated system automation.
 - **No reinventing the wheel on calendar internals**: Do not hand-roll custom recurrence date math or build complex calendar time-grids from scratch when modifiable open-source libraries can handle them cleanly.
 - **No chat clutter from Quick Commands**: Quick Command interactions must not automatically spam the Main Window's saved conversation list unless explicitly promoted by the user.
+- **No premature system notifications**: Desktop notifications are explicitly deferred until all core feature modules (Calendar, To-Do, Habits, Finance) are in place, so the notification layer can be built cleanly on top of a settled, unified schema rather than being patched incrementally into half-finished features.
