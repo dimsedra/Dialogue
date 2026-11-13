@@ -1,28 +1,62 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, type KeyboardEvent } from "react";
+import {
+  ArrowUp,
+  CalendarDays,
+  PanelLeftOpen,
+  PanelRight,
+  PanelRightClose,
+} from "lucide-react";
 import {
   createChatThread,
   getChatThreadMessages,
   sendThreadMessage,
 } from "./chat.service";
 import type { ChatMessage } from "./chat.schema";
-import type { ExecutedCalendarToolSummary } from "../agent/agent.service";
 import { ProviderNotConfiguredError } from "../settings/settings.schema";
 import { MarkdownContent } from "./MarkdownContent";
+import { ToolExecutionList } from "./ToolExecutionList";
+import { LogoMark } from "../../components/Brand";
+import { PILLARS } from "../../components/pillars";
+import { cn } from "../../core/cn";
 
 export interface ChatViewProps {
   activeThreadId?: string | null;
   activeThreadTitle?: string;
+  draftOverride?: string;
+  focusTick?: number;
+  leftOpen?: boolean;
+  rightOpen?: boolean;
   onActiveThreadChange?: (threadId: string) => void;
   onNavigateToSettings?: () => void;
   onThreadsRefresh?: () => void;
+  onViewCalendarEvent?: (startTimeIso: string, eventId?: string) => void;
+  onOpenLeft?: () => void;
+  onToggleRight?: () => void;
+}
+
+function formatMessageTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 export function ChatView({
   activeThreadId,
   activeThreadTitle,
+  draftOverride,
+  focusTick = 0,
+  leftOpen = true,
+  rightOpen = true,
   onActiveThreadChange,
   onNavigateToSettings,
   onThreadsRefresh,
+  onViewCalendarEvent,
+  onOpenLeft,
+  onToggleRight,
 }: ChatViewProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -31,12 +65,49 @@ export function ChatView({
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [isProviderUnconfigured, setIsProviderUnconfigured] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lastThreadRef = useRef<string | null | undefined>(activeThreadId);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  useEffect(() => {
+    if (draftOverride !== undefined) {
+      setInputText(draftOverride);
+    }
+  }, [draftOverride, focusTick]);
+
+  useEffect(() => {
+    if (focusTick > 0) {
+      const el = textareaRef.current;
+      if (el) {
+        el.focus();
+        el.setSelectionRange(el.value.length, el.value.length);
+      }
+    }
+  }, [focusTick]);
+
+  // Auto-grow textarea up to ~6 lines (168px)
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 168)}px`;
+  }, [inputText]);
+
+  // Scroll smoothly on new messages, keep empty state anchored at the top
+  useLayoutEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const switched = lastThreadRef.current !== activeThreadId;
+    lastThreadRef.current = activeThreadId;
+    if (messages.length === 0 && !streamingDelta && !isSending) {
+      el.scrollTo({ top: 0, behavior: "instant" });
+      return;
+    }
+    el.scrollTo({
+      top: el.scrollHeight,
+      behavior: switched ? "instant" : "smooth",
+    });
+  }, [activeThreadId, messages.length, streamingDelta, isSending]);
 
   useEffect(() => {
     if (!activeThreadId) {
@@ -50,7 +121,6 @@ export function ChatView({
         setMessages(msgs);
         setErrorBanner(null);
         setIsProviderUnconfigured(false);
-        setTimeout(scrollToBottom, 50);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         setErrorBanner(`Failed to load messages: ${msg}`);
@@ -65,7 +135,7 @@ export function ChatView({
     let targetThreadId = activeThreadId;
     if (!targetThreadId) {
       try {
-        const created = await createChatThread(text.slice(0, 30));
+        const created = await createChatThread(text.slice(0, 34));
         targetThreadId = created.id;
         onActiveThreadChange?.(created.id);
         onThreadsRefresh?.();
@@ -82,7 +152,6 @@ export function ChatView({
     setErrorBanner(null);
     setIsProviderUnconfigured(false);
 
-    // Optimistically show user message
     const tempUserMsg: ChatMessage = {
       id: "temp-" + Date.now(),
       threadId: targetThreadId,
@@ -92,7 +161,6 @@ export function ChatView({
       createdAt: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, tempUserMsg]);
-    setTimeout(scrollToBottom, 50);
 
     try {
       const { assistantMessage } = await sendThreadMessage({
@@ -100,7 +168,6 @@ export function ChatView({
         userText: text,
         onTextDelta: (delta) => {
           setStreamingDelta((prev) => prev + delta);
-          scrollToBottom();
         },
       });
 
@@ -115,7 +182,7 @@ export function ChatView({
       if (err instanceof ProviderNotConfiguredError) {
         setIsProviderUnconfigured(true);
         setErrorBanner(
-          "AI Provider is not configured. Please enter your API key or model endpoint in Settings."
+          "AI Provider is not configured. Add your API key or local endpoint in Settings."
         );
       } else {
         const msg = err instanceof Error ? err.message : String(err);
@@ -125,93 +192,81 @@ export function ChatView({
     } finally {
       setIsSending(false);
       setStreamingDelta("");
-      setTimeout(scrollToBottom, 50);
     }
   };
 
-  const renderToolBadge = (tool: ExecutedCalendarToolSummary, idx: number) => {
-    if (tool.toolName === "createEvent") {
-      const res = tool.result as { title?: string; startTime?: string };
-      return (
-        <div
-          key={idx}
-          className="inline-flex items-center space-x-2 px-3 py-1.5 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded text-xs font-mono my-1"
-        >
-          <span className="text-emerald-400 font-bold">✦</span>
-          <span>Created event:</span>
-          <span className="font-semibold text-emerald-100">
-            {res.title ?? "Event"}
-          </span>
-        </div>
-      );
+  const handleTextareaKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      void handleSendMessage();
     }
-
-    if (tool.toolName === "updateEvent") {
-      const res = tool.result as { title?: string };
-      return (
-        <div
-          key={idx}
-          className="inline-flex items-center space-x-2 px-3 py-1.5 bg-amber-950/40 border border-amber-800 text-amber-300 rounded text-xs font-mono my-1"
-        >
-          <span className="text-amber-400 font-bold">↻</span>
-          <span>Updated event:</span>
-          <span className="font-semibold text-amber-100">
-            {res.title ?? "Event"}
-          </span>
-        </div>
-      );
-    }
-
-    if (tool.toolName === "deleteEvent") {
-      return (
-        <div
-          key={idx}
-          className="inline-flex items-center space-x-2 px-3 py-1.5 bg-rose-950/40 border border-rose-800 text-rose-300 rounded text-xs font-mono my-1"
-        >
-          <span className="text-rose-400 font-bold">✕</span>
-          <span>Deleted event</span>
-        </div>
-      );
-    }
-
-    if (tool.toolName === "listEvents") {
-      const count = Array.isArray(tool.result) ? tool.result.length : 0;
-      return (
-        <div
-          key={idx}
-          className="inline-flex items-center space-x-2 px-3 py-1.5 bg-blue-950/40 border border-blue-800 text-blue-300 rounded text-xs font-mono my-1"
-        >
-          <span className="text-blue-400 font-bold">#</span>
-          <span>Checked schedule: {count} events found</span>
-        </div>
-      );
-    }
-
-    return null;
   };
+
+  const hasCalendarActivity = messages.some(
+    (m) => m.toolExecutions && m.toolExecutions.length > 0
+  );
+  const canSend = inputText.trim().length > 0 && !isSending;
+  const isEmpty = messages.length === 0 && !streamingDelta && !isSending;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#090a0c] text-[#f3f4f6] overflow-hidden select-none font-sans">
+    <div className="flex h-full min-w-0 flex-1 flex-col bg-paper text-ink">
       {/* Top Header */}
-      <header className="h-14 border-b border-[#22242a] px-6 flex items-center justify-between bg-[#090a0c] shrink-0">
-        <div className="flex items-center space-x-3 min-w-0">
-          <span className="text-sm font-semibold text-[#f3f4f6] tracking-tight truncate">
-            {activeThreadTitle || "New Conversation"}
-          </span>
+      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-line px-5">
+        <div className="flex min-w-0 items-center gap-2">
+          {!leftOpen && onOpenLeft && (
+            <button
+              type="button"
+              onClick={onOpenLeft}
+              aria-label="Show sidebar"
+              title="Show sidebar"
+              className="-ml-1 mr-1 grid size-8 shrink-0 place-items-center rounded-lg text-ink-2 transition hover:bg-active hover:text-ink"
+            >
+              <PanelLeftOpen className="size-[18px]" />
+            </button>
+          )}
+          <h1 className="truncate text-[15.5px] font-semibold text-ink">
+            {activeThreadTitle || "New conversation"}
+          </h1>
+          {hasCalendarActivity && (
+            <span className="hidden shrink-0 items-center gap-1.5 rounded-full bg-calendar-tint px-2.5 py-1 text-[12px] font-medium leading-none text-calendar-fg sm:inline-flex">
+              <CalendarDays className="size-3" />
+              Calendar
+            </span>
+          )}
         </div>
-        <div className="flex items-center space-x-3 text-xs text-[#525660] font-mono">
-          <span>Vercel AI SDK</span>
-        </div>
+
+        {onToggleRight && (
+          <button
+            type="button"
+            onClick={onToggleRight}
+            aria-pressed={rightOpen}
+            title={rightOpen ? "Hide quick look" : "Show quick look"}
+            className={cn(
+              "flex h-8 shrink-0 items-center gap-2 rounded-lg border px-2.5 text-[13px] font-medium transition",
+              rightOpen
+                ? "border-line bg-surface text-ink"
+                : "border-transparent text-ink-2 hover:bg-active hover:text-ink"
+            )}
+          >
+            {rightOpen ? (
+              <PanelRightClose className="size-[17px]" />
+            ) : (
+              <PanelRight className="size-[17px]" />
+            )}
+            <span className="hidden md:inline">Quick look</span>
+          </button>
+        )}
       </header>
 
       {/* Warning / Error Banner */}
       {errorBanner && (
-        <div className="px-6 py-3 bg-amber-950/40 border-b border-amber-800 text-amber-200 text-xs flex items-center justify-between shrink-0">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-amber-800/70 bg-amber-950/35 px-5 py-3 text-[13px] text-amber-200">
           <span className="leading-relaxed">{errorBanner}</span>
           {isProviderUnconfigured && onNavigateToSettings && (
             <button
+              type="button"
               onClick={onNavigateToSettings}
-              className="ml-4 px-3 py-1.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded text-xs font-medium shrink-0 transition-colors"
+              className="shrink-0 rounded-lg bg-calendar px-3 py-1.5 text-[12.5px] font-semibold text-white transition hover:bg-calendar-hover"
             >
               Configure in Settings
             </button>
@@ -219,113 +274,161 @@ export function ChatView({
         </div>
       )}
 
-      {/* Conversation Messages Area */}
-      <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6">
-        {messages.length === 0 && !streamingDelta && (
-          <div className="h-full flex flex-col items-center justify-center text-center space-y-5 max-w-lg mx-auto my-auto py-12">
-            <div className="w-12 h-12 rounded-xl bg-[#131417] border border-[#22242a] flex items-center justify-center text-[#3b82f6] text-lg font-semibold shadow-inner">
-              ✦
-            </div>
-            <div className="space-y-1.5">
-              <h3 className="text-base font-semibold text-[#f3f4f6] tracking-tight">
-                Welcome to Dialogue
-              </h3>
-              <p className="text-sm text-[#8b8f98] leading-relaxed">
-                Your minimalist desktop companion for AI conversations and calendar management.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 gap-2.5 w-full pt-3">
-              <button
-                onClick={() => void handleSendMessage("Schedule team standup tomorrow at 10am")}
-                className="text-left p-3.5 rounded-lg bg-[#131417] hover:bg-[#18191e] border border-[#22242a] hover:border-[#363942] transition-colors"
-              >
-                <div className="text-sm text-[#f3f4f6] font-medium">
-                  Schedule team standup
-                </div>
-                <div className="text-xs text-[#8b8f98] font-mono mt-1">
-                  "Schedule team standup tomorrow at 10am"
-                </div>
-              </button>
-              <button
-                onClick={() => void handleSendMessage("What events are on my calendar today?")}
-                className="text-left p-3.5 rounded-lg bg-[#131417] hover:bg-[#18191e] border border-[#22242a] hover:border-[#363942] transition-colors"
-              >
-                <div className="text-sm text-[#f3f4f6] font-medium">
-                  Check today's agenda
-                </div>
-                <div className="text-xs text-[#8b8f98] font-mono mt-1">
-                  "What events are on my calendar today?"
-                </div>
-              </button>
+      {/* Conversation Stream */}
+      <div ref={scrollerRef} className="min-h-0 flex-1 overflow-y-auto">
+        {isEmpty ? (
+          <div className="mx-auto flex min-h-full w-full max-w-[46rem] flex-col justify-start px-5 py-6 sm:justify-center sm:px-6 sm:py-10">
+            <LogoMark className="size-11 rounded-[12px] sm:size-12 sm:rounded-[14px]" />
+            <h2 className="mt-5 font-display text-[28px] font-medium leading-[1.15] tracking-[-0.015em] text-ink sm:mt-6 sm:text-[34px]">
+              What is on your plate today?
+            </h2>
+            <p className="mt-2.5 max-w-[34rem] text-[14.5px] leading-relaxed text-ink-2 sm:mt-3 sm:text-[15.5px]">
+              Tell me about the appointment you keep postponing, or ask what your
+              week looks like. I will handle it directly on this device.
+            </p>
+            <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2">
+              {PILLARS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => void handleSendMessage(p.suggestion)}
+                  className="group flex flex-col items-start gap-2.5 rounded-2xl border border-line bg-surface p-3.5 text-left transition hover:-translate-y-0.5 hover:border-line-strong hover:bg-sunken sm:gap-3 sm:p-4"
+                >
+                  <span className="flex w-full items-center justify-between">
+                    <span
+                      className={cn(
+                        "grid size-8 place-items-center rounded-lg",
+                        p.tint,
+                        p.fg
+                      )}
+                    >
+                      <p.icon className="size-[17px]" />
+                    </span>
+                    <span className="text-[12px] font-medium text-ink-2">
+                      {p.promptTag}
+                    </span>
+                  </span>
+                  <span className="text-[14px] font-medium leading-snug text-ink sm:text-[14.5px]">
+                    “{p.suggestion}”
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
-        )}
+        ) : (
+          <div className="mx-auto flex w-full max-w-[46rem] flex-col gap-8 px-6 pb-6 pt-8">
+            {messages.map((msg) => {
+              if (msg.role === "user") {
+                return (
+                  <div key={msg.id} className="flex animate-rise justify-end">
+                    <p className="max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-br-md border border-line bg-sunken px-4 py-3 text-[15.5px] leading-[1.6] text-ink">
+                      {msg.content}
+                    </p>
+                  </div>
+                );
+              }
 
-        {messages.map((msg) => {
-          const isUser = msg.role === "user";
-          return (
-            <div
-              key={msg.id}
-              className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
-            >
-              {isUser ? (
-                /* User Message: Clean dark grey card */
-                <div className="max-w-[70%] rounded-lg px-4 py-3 text-sm bg-[#18191e] text-[#f3f4f6] border border-[#22242a] shadow-sm leading-relaxed">
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                </div>
-              ) : (
-                /* Assistant Message: Editorial layout with full Markdown rendering */
-                <div className="max-w-[85%] space-y-2">
-                  {msg.toolExecutions && msg.toolExecutions.length > 0 && (
-                    <div className="flex flex-col space-y-1.5 mb-2">
-                      {msg.toolExecutions.map(renderToolBadge)}
+              return (
+                <div key={msg.id} className="flex animate-rise gap-3.5">
+                  <LogoMark className="mt-0.5 size-8 rounded-[10px]" />
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1.5 flex items-baseline gap-2">
+                      <span className="text-[13.5px] font-semibold text-ink">
+                        Dialogue
+                      </span>
+                      <span className="text-[12px] text-ink-2">
+                        {formatMessageTime(msg.createdAt)}
+                      </span>
                     </div>
-                  )}
-                  <MarkdownContent content={msg.content} />
+                    <MarkdownContent content={msg.content} />
+                    <ToolExecutionList
+                      tools={msg.toolExecutions}
+                      onViewEvent={onViewCalendarEvent}
+                    />
+                  </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
+              );
+            })}
 
-        {/* Active Streaming Response */}
-        {streamingDelta && (
-          <div className="flex flex-col items-start max-w-[85%]">
-            <MarkdownContent content={streamingDelta} />
-            <span className="inline-block w-2 h-4 bg-[#3b82f6] mt-1 animate-pulse align-middle" />
+            {isSending && !streamingDelta && (
+              <div
+                className="flex animate-rise gap-3.5"
+                role="status"
+                aria-label="Dialogue is thinking"
+              >
+                <LogoMark className="mt-0.5 size-8 rounded-[10px]" />
+                <div className="flex h-9 items-center gap-1.5 pl-1">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      style={{ animationDelay: `${i * 0.16}s` }}
+                      className="size-2 animate-dot rounded-full bg-ink-2"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {streamingDelta && (
+              <div className="flex animate-rise gap-3.5">
+                <LogoMark className="mt-0.5 size-8 rounded-[10px]" />
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1.5 flex items-baseline gap-2">
+                    <span className="text-[13.5px] font-semibold text-ink">
+                      Dialogue
+                    </span>
+                  </div>
+                  <MarkdownContent content={streamingDelta} />
+                </div>
+              </div>
+            )}
           </div>
         )}
-
-        <div ref={messagesEndRef} />
       </div>
 
-      {/* Floating Bottom Input Dock */}
-      <footer className="p-5 bg-[#090a0c] border-t border-[#22242a]">
-        <div className="max-w-3xl mx-auto flex items-center space-x-3 bg-[#131417] border border-[#22242a] rounded-lg px-4 py-3 focus-within:border-[#3b82f6] focus-within:ring-1 focus-within:ring-[#3b82f6]/40 transition-colors shadow-lg">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void handleSendMessage();
-              }
-            }}
-            placeholder="Ask Dialogue anything or schedule an event..."
-            className="flex-1 bg-transparent text-sm text-[#f3f4f6] placeholder-[#525660] outline-none font-sans"
-          />
-          <button
-            onClick={() => void handleSendMessage()}
-            disabled={isSending || !inputText.trim()}
-            className="px-3 py-1.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-semibold rounded transition-colors disabled:opacity-30 font-mono"
-            title="Send message (Enter)"
-          >
-            ↵
-          </button>
+      {/* Auto-Growing Composer */}
+      <div className="shrink-0 pb-4 pt-2">
+        <div className="mx-auto w-full max-w-[46rem] px-6">
+          <div className="rounded-2xl border border-line-strong bg-surface transition focus-within:border-calendar focus-within:ring-2 focus-within:ring-calendar/20">
+            <label className="sr-only" htmlFor="dialogue-composer">
+              Message Dialogue
+            </label>
+            <textarea
+              id="dialogue-composer"
+              ref={textareaRef}
+              rows={1}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleTextareaKeyDown}
+              placeholder="Tell me what is on your plate…"
+              className="block max-h-[168px] w-full resize-none bg-transparent px-4 pb-1.5 pt-3.5 text-[15.5px] leading-[1.6] text-ink outline-none placeholder:text-ink-4"
+            />
+            <div className="flex items-center justify-between gap-3 px-3 pb-2.5 pl-4">
+              <p className="text-[12px] text-ink-2">
+                <kbd className="font-sans font-semibold text-ink">Enter</kbd> to send ·{" "}
+                <kbd className="font-sans font-semibold text-ink">Shift + Enter</kbd> for a new line
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleSendMessage()}
+                disabled={!canSend}
+                aria-label="Send message"
+                className={cn(
+                  "grid size-9 place-items-center rounded-xl transition",
+                  canSend
+                    ? "bg-ink text-paper hover:bg-white active:scale-95"
+                    : "bg-sunken text-ink-4"
+                )}
+              >
+                <ArrowUp className="size-[18px]" strokeWidth={2.5} />
+              </button>
+            </div>
+          </div>
+          <p className="mt-2.5 text-center text-[12px] text-ink-4">
+            Dialogue sticks to your calendar, to-dos, habits and money, and keeps all of it on this device.
+          </p>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

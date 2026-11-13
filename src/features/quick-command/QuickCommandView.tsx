@@ -6,6 +6,8 @@ import { runAgentTurn, type ExecutedCalendarToolSummary } from "../agent/agent.s
 import { promoteQuickExchangeToThread } from "../chat/chat.service";
 import { ProviderNotConfiguredError } from "../settings/settings.schema";
 import { MarkdownContent } from "../chat/MarkdownContent";
+import { ToolExecutionList } from "../chat/ToolExecutionList";
+import { LogoMark } from "../../components/Brand";
 
 interface EphemeralExchange {
   user: string;
@@ -41,6 +43,32 @@ export function QuickCommandView() {
       // In browser preview
     }
     resetState();
+  };
+
+  const handleContinueInApp = async () => {
+    if (!activeExchange) return;
+
+    try {
+      await promoteQuickExchangeToThread({
+        exchanges: [
+          {
+            role: "user",
+            content: activeExchange.user,
+          },
+          {
+            role: "assistant",
+            content: activeExchange.assistant,
+            toolExecutions: activeExchange.tools,
+          },
+        ],
+      });
+
+      await focusMainWindow();
+      closeOverlay();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setErrorMessage(`Failed to hand off to app: ${msg}`);
+    }
   };
 
   useEffect(() => {
@@ -92,7 +120,7 @@ export function QuickCommandView() {
       if (err instanceof ProviderNotConfiguredError) {
         setIsProviderUnconfigured(true);
         setErrorMessage(
-          "AI Provider is not configured. Please enter your API key or model endpoint in Settings."
+          "AI Provider is not configured. Add your API key or model endpoint in Settings."
         );
       } else {
         const msg = err instanceof Error ? err.message : String(err);
@@ -100,32 +128,6 @@ export function QuickCommandView() {
       }
     } finally {
       setIsStreaming(false);
-    }
-  };
-
-  const handleContinueInApp = async () => {
-    if (!activeExchange) return;
-
-    try {
-      await promoteQuickExchangeToThread({
-        exchanges: [
-          {
-            role: "user",
-            content: activeExchange.user,
-          },
-          {
-            role: "assistant",
-            content: activeExchange.assistant,
-            toolExecutions: activeExchange.tools,
-          },
-        ],
-      });
-
-      await focusMainWindow();
-      closeOverlay();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMessage(`Failed to hand off to app: ${msg}`);
     }
   };
 
@@ -138,73 +140,12 @@ export function QuickCommandView() {
     closeOverlay();
   };
 
-  const renderToolBadge = (tool: ExecutedCalendarToolSummary, idx: number) => {
-    if (tool.toolName === "createEvent") {
-      const res = tool.result as { title?: string };
-      return (
-        <span
-          key={idx}
-          className="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded text-xs font-mono mr-2 mb-1.5"
-        >
-          <span className="text-emerald-400 font-bold">✦</span>
-          <span>Created:</span>
-          <span className="font-semibold text-emerald-100">
-            {res.title ?? "Event"}
-          </span>
-        </span>
-      );
-    }
-
-    if (tool.toolName === "updateEvent") {
-      const res = tool.result as { title?: string };
-      return (
-        <span
-          key={idx}
-          className="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-amber-950/40 border border-amber-800 text-amber-300 rounded text-xs font-mono mr-2 mb-1.5"
-        >
-          <span className="text-amber-400 font-bold">↻</span>
-          <span>Updated:</span>
-          <span className="font-semibold text-amber-100">
-            {res.title ?? "Event"}
-          </span>
-        </span>
-      );
-    }
-
-    if (tool.toolName === "deleteEvent") {
-      return (
-        <span
-          key={idx}
-          className="inline-flex items-center px-2.5 py-1 bg-rose-950/40 border border-rose-800 text-rose-300 rounded text-xs font-mono mr-2 mb-1.5"
-        >
-          <span className="text-rose-400 font-bold mr-1">✕</span>
-          <span>Deleted event</span>
-        </span>
-      );
-    }
-
-    if (tool.toolName === "listEvents") {
-      const count = Array.isArray(tool.result) ? tool.result.length : 0;
-      return (
-        <span
-          key={idx}
-          className="inline-flex items-center px-2.5 py-1 bg-blue-950/40 border border-blue-800 text-blue-300 rounded text-xs font-mono mr-2 mb-1.5"
-        >
-          <span className="text-blue-400 font-bold mr-1">#</span>
-          <span>Found {count} event{count === 1 ? "" : "s"}</span>
-        </span>
-      );
-    }
-
-    return null;
-  };
-
   return (
-    <div className="w-full h-full flex items-center justify-center p-4 bg-transparent select-none font-sans">
-      <div className="w-[680px] bg-[#090a0c] border border-[#22242a] rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[460px]">
-        {/* Raycast Search Input Header */}
-        <div className="flex items-center px-5 py-4 border-b border-[#22242a] bg-[#131417]">
-          <span className="text-[#3b82f6] mr-3 text-base font-semibold">✦</span>
+    <div className="flex h-full w-full items-center justify-center bg-transparent p-4 select-none">
+      <div className="flex max-h-[480px] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl border border-line bg-paper shadow-float">
+        {/* Prompt Input Header */}
+        <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-line bg-surface px-3.5 sm:gap-3 sm:px-4">
+          <LogoMark className="size-8 rounded-[10px]" />
           <input
             ref={inputRef}
             autoFocus
@@ -217,61 +158,76 @@ export function QuickCommandView() {
                 void handleRunCommand();
               }
             }}
-            placeholder="Ask AI..."
-            className="flex-1 bg-transparent text-[#f3f4f6] placeholder-[#525660] text-base outline-none font-sans"
+            placeholder="Ask Dialogue or log an event…"
+            className="min-w-0 flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-ink-4 sm:text-[15.5px]"
           />
-          <span className="text-xs font-mono text-[#525660] bg-[#090a0c] px-2.5 py-1 rounded border border-[#22242a]">
+          <kbd className="shrink-0 rounded-md border border-line bg-paper px-2 py-1 font-mono text-[11.5px] font-medium leading-none text-ink-2">
             Esc
-          </span>
+          </kbd>
         </div>
 
-        {/* Response Body Area */}
-        <div className="p-5 overflow-y-auto flex-1 min-h-[160px] flex flex-col justify-center">
+        {/* Response Body */}
+        <div className="flex min-h-[176px] flex-1 flex-col justify-center overflow-y-auto p-5">
           {errorMessage ? (
-            <div className="space-y-3 p-4 bg-red-950/40 border border-red-800 rounded-lg text-sm text-red-200">
-              <p>{errorMessage}</p>
+            <div className="space-y-3 rounded-xl border border-rose-800/70 bg-rose-950/30 p-4 text-[13.5px] text-rose-200">
+              <p className="leading-relaxed">{errorMessage}</p>
               {isProviderUnconfigured && (
                 <button
-                  onClick={handleOpenSettingsInApp}
-                  className="px-3 py-1.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded text-xs font-medium transition-colors"
+                  type="button"
+                  onClick={() => void handleOpenSettingsInApp()}
+                  className="rounded-lg bg-calendar px-3 py-1.5 text-[12.5px] font-semibold text-white transition hover:bg-calendar-hover"
                 >
                   Configure AI Provider in Settings
                 </button>
               )}
             </div>
           ) : isStreaming ? (
-            <div className="space-y-2">
-              <MarkdownContent content={streamingText} />
-              <span className="inline-block w-2 h-4 bg-[#3b82f6] ml-1 animate-pulse align-middle" />
-            </div>
+            streamingText ? (
+              <div className="animate-rise space-y-2">
+                <MarkdownContent content={streamingText} />
+              </div>
+            ) : (
+              <div
+                className="flex items-center gap-1.5 py-2"
+                role="status"
+                aria-label="Dialogue is thinking"
+              >
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    style={{ animationDelay: `${i * 0.16}s` }}
+                    className="size-2 animate-dot rounded-full bg-ink-2"
+                  />
+                ))}
+              </div>
+            )
           ) : activeExchange ? (
-            <div className="space-y-3">
-              {activeExchange.tools.length > 0 && (
-                <div className="flex flex-wrap items-center">
-                  {activeExchange.tools.map(renderToolBadge)}
-                </div>
-              )}
+            <div className="animate-rise space-y-3">
               <MarkdownContent content={activeExchange.assistant} />
+              <ToolExecutionList tools={activeExchange.tools} />
             </div>
           ) : (
-            <div className="text-center py-6 text-sm text-[#525660] space-y-2">
-              <p className="text-[#8b8f98] font-medium text-sm">Ready for fast questions or calendar commands</p>
-              <p className="text-xs text-[#525660] font-mono">
-                "What's on my schedule today?" or "Lunch with team tomorrow at 12pm"
+            <div className="space-y-2 py-5 text-center">
+              <p className="font-display text-[20px] font-medium text-ink">
+                Quick command
+              </p>
+              <p className="text-[13.5px] text-ink-2">
+                Try “What is on my schedule today?” or “Lunch with team tomorrow at 12pm”
               </p>
             </div>
           )}
         </div>
 
-        {/* Bottom Command Bar Footer */}
-        <div className="px-5 py-3 bg-[#131417] border-t border-[#22242a] flex items-center justify-between text-xs text-[#525660]">
-          <span className="font-medium text-[#8b8f98]">Dialogue Command</span>
-          <div className="flex items-center space-x-4 font-mono">
+        {/* Bottom Command Footer */}
+        <div className="flex shrink-0 items-center justify-between border-t border-line bg-surface px-5 py-3 text-[12px] text-ink-2">
+          <span className="font-medium text-ink-2">Dialogue Command</span>
+          <div className="flex items-center gap-4 font-mono">
             <span>↵ Run</span>
             {activeExchange && (
               <button
-                onClick={handleContinueInApp}
-                className="text-[#3b82f6] hover:text-[#60a5fa] transition-colors flex items-center space-x-1 font-medium"
+                type="button"
+                onClick={() => void handleContinueInApp()}
+                className="flex items-center gap-1 font-medium text-calendar-fg transition hover:text-ink"
               >
                 <span>⌘↵ Continue in App</span>
               </button>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, PanelLeftOpen, Plus, X } from "lucide-react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -79,7 +80,17 @@ function toLocalDatetimeString(isoString: string): string {
   return new Date(d.getTime() - offset).toISOString().slice(0, 16);
 }
 
-export function CalendarView() {
+export interface CalendarViewProps {
+  leftOpen?: boolean;
+  onOpenLeft?: () => void;
+  onBackToChat?: () => void;
+}
+
+export function CalendarView({
+  leftOpen = true,
+  onOpenLeft,
+  onBackToChat,
+}: CalendarViewProps) {
   const calendarRef = useRef<FullCalendar>(null);
   const [currentView, setCurrentView] = useState<string>("timeGridWeek");
   const [headerTitle, setHeaderTitle] = useState<string>("");
@@ -384,69 +395,87 @@ export function CalendarView() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#090a0c] text-[#f3f4f6] overflow-hidden select-none">
-      {/* Calendar Top Toolbar */}
-      <header className="h-14 border-b border-[#22242a] flex items-center justify-between px-6 bg-[#131417] shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center border border-[#22242a] rounded-lg overflow-hidden bg-[#090a0c]">
+    <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-paper text-ink select-none">
+      {/* Calendar Top Toolbar (uniform 56px height matching sidebar seam) */}
+      <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line bg-paper px-4 sm:px-5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {!leftOpen && onOpenLeft && (
             <button
-              onClick={handlePrev}
-              className="px-3 py-1.5 text-xs text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e] transition-colors"
+              type="button"
+              onClick={onOpenLeft}
+              aria-label="Show sidebar"
+              title="Show sidebar"
+              className="-ml-1 grid size-8 shrink-0 place-items-center rounded-lg text-ink-2 transition hover:bg-active hover:text-ink"
             >
-              ‹
+              <PanelLeftOpen className="size-[18px]" />
+            </button>
+          )}
+          <div className="hidden items-center overflow-hidden rounded-xl border border-line bg-surface sm:flex">
+            <button
+              type="button"
+              onClick={handlePrev}
+              aria-label="Previous period"
+              className="grid size-8 place-items-center text-ink-2 transition hover:bg-active hover:text-ink"
+            >
+              <ChevronLeft className="size-4" />
             </button>
             <button
+              type="button"
               onClick={handleToday}
-              className="px-3 py-1.5 text-xs text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e] border-x border-[#22242a] transition-colors font-medium"
+              className="h-8 border-x border-line px-3 text-[12.5px] font-medium text-ink-2 transition hover:bg-active hover:text-ink"
             >
               Today
             </button>
             <button
+              type="button"
               onClick={handleNext}
-              className="px-3 py-1.5 text-xs text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e] transition-colors"
+              aria-label="Next period"
+              className="grid size-8 place-items-center text-ink-2 transition hover:bg-active hover:text-ink"
             >
-              ›
+              <ChevronRight className="size-4" />
             </button>
           </div>
-          <h2 className="text-base font-semibold text-[#f3f4f6] ml-2 tracking-tight">
+          <h1 className="truncate font-sans text-[15.5px] font-semibold tracking-[-0.01em] text-ink tabular-nums sm:text-[16px]">
             {headerTitle}
-          </h2>
+          </h1>
         </div>
 
-        <div className="flex items-center space-x-3">
-          {/* Detected Timezone Badge */}
-          <span className="text-xs font-mono text-[#8b8f98] bg-[#090a0c] px-2.5 py-1.5 rounded-lg border border-[#22242a]">
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="hidden font-mono text-[11.5px] text-ink-2 lg:inline">
             {systemTimeZone}
           </span>
 
-          {/* View switcher */}
-          <div className="flex items-center border border-[#22242a] rounded-lg overflow-hidden bg-[#090a0c]">
+          {/* Desktop View Switcher */}
+          <div className="hidden items-center rounded-xl border border-line bg-sunken p-0.5 sm:flex">
             <button
+              type="button"
               onClick={() => handleViewChange("dayGridMonth")}
-              className={`px-3.5 py-1.5 text-xs font-medium transition-colors ${
+              className={`h-7 rounded-lg px-3 text-[12.5px] font-medium transition ${
                 currentView === "dayGridMonth"
-                  ? "bg-[#1c1e24] text-[#f3f4f6]"
-                  : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
+                  ? "bg-surface text-ink ring-1 ring-line"
+                  : "text-ink-2 hover:text-ink"
               }`}
             >
               Month
             </button>
             <button
+              type="button"
               onClick={() => handleViewChange("timeGridWeek")}
-              className={`px-3.5 py-1.5 text-xs font-medium border-x border-[#22242a] transition-colors ${
+              className={`h-7 rounded-lg px-3 text-[12.5px] font-medium transition ${
                 currentView === "timeGridWeek"
-                  ? "bg-[#1c1e24] text-[#f3f4f6]"
-                  : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
+                  ? "bg-surface text-ink ring-1 ring-line"
+                  : "text-ink-2 hover:text-ink"
               }`}
             >
               Week
             </button>
             <button
+              type="button"
               onClick={() => handleViewChange("timeGridDay")}
-              className={`px-3.5 py-1.5 text-xs font-medium transition-colors ${
+              className={`h-7 rounded-lg px-3 text-[12.5px] font-medium transition ${
                 currentView === "timeGridDay"
-                  ? "bg-[#1c1e24] text-[#f3f4f6]"
-                  : "text-[#8b8f98] hover:text-[#f3f4f6] hover:bg-[#18191e]"
+                  ? "bg-surface text-ink ring-1 ring-line"
+                  : "text-ink-2 hover:text-ink"
               }`}
             >
               Day
@@ -454,13 +483,95 @@ export function CalendarView() {
           </div>
 
           <button
+            type="button"
             onClick={() => openCreateModal()}
-            className="px-3.5 py-1.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+            aria-label="New event"
+            title="New event"
+            className="flex h-8 items-center gap-1.5 rounded-xl bg-ink px-2.5 text-[12.5px] font-semibold text-paper transition hover:bg-white sm:px-3"
           >
-            + New Event
+            <Plus className="size-3.5" strokeWidth={2.5} />
+            <span className="hidden sm:inline">New event</span>
           </button>
+
+          {onBackToChat && (
+            <button
+              type="button"
+              onClick={onBackToChat}
+              aria-label="Back to chat"
+              title="Back to chat"
+              className="flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 text-[12.5px] font-medium text-ink transition hover:border-line-strong hover:bg-sunken"
+            >
+              <ArrowLeft className="size-3.5" />
+              <span className="hidden md:inline">Back to chat</span>
+            </button>
+          )}
         </div>
       </header>
+
+      {/* Mobile Secondary Calendar Bar (date navigation + Month/Week/Day switcher) */}
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line bg-surface px-4 py-2 sm:hidden">
+        <div className="flex items-center overflow-hidden rounded-xl border border-line bg-paper">
+          <button
+            type="button"
+            onClick={handlePrev}
+            aria-label="Previous period"
+            className="grid size-7 place-items-center text-ink-2 transition hover:bg-active hover:text-ink"
+          >
+            <ChevronLeft className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleToday}
+            className="h-7 border-x border-line px-2.5 text-[12px] font-medium text-ink-2 transition hover:bg-active hover:text-ink"
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            aria-label="Next period"
+            className="grid size-7 place-items-center text-ink-2 transition hover:bg-active hover:text-ink"
+          >
+            <ChevronRight className="size-3.5" />
+          </button>
+        </div>
+
+        <div className="flex items-center rounded-xl border border-line bg-paper p-0.5">
+          <button
+            type="button"
+            onClick={() => handleViewChange("dayGridMonth")}
+            className={`h-6 rounded-lg px-2.5 text-[12px] font-medium transition ${
+              currentView === "dayGridMonth"
+                ? "bg-active text-ink ring-1 ring-line"
+                : "text-ink-2 hover:text-ink"
+            }`}
+          >
+            Month
+          </button>
+          <button
+            type="button"
+            onClick={() => handleViewChange("timeGridWeek")}
+            className={`h-6 rounded-lg px-2.5 text-[12px] font-medium transition ${
+              currentView === "timeGridWeek"
+                ? "bg-active text-ink ring-1 ring-line"
+                : "text-ink-2 hover:text-ink"
+            }`}
+          >
+            Week
+          </button>
+          <button
+            type="button"
+            onClick={() => handleViewChange("timeGridDay")}
+            className={`h-6 rounded-lg px-2.5 text-[12px] font-medium transition ${
+              currentView === "timeGridDay"
+                ? "bg-active text-ink ring-1 ring-line"
+                : "text-ink-2 hover:text-ink"
+            }`}
+          >
+            Day
+          </button>
+        </div>
+      </div>
 
       {/* Main FullCalendar Area */}
       <div className="flex-1 p-2 overflow-hidden">
@@ -520,29 +631,31 @@ export function CalendarView() {
 
       {/* Event Modal Dialog */}
       {modal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-[480px] bg-[#090a0c] border border-[#22242a] rounded-xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="px-5 py-4 border-b border-[#22242a] bg-[#131417] flex items-center justify-between">
-              <span className="text-sm font-semibold text-[#f3f4f6]">
-                {modal.mode === "create" ? "Create Event" : "Edit Event"}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4">
+          <div className="flex w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-line bg-paper shadow-float">
+            <div className="flex items-center justify-between border-b border-line bg-surface px-5 py-4">
+              <span className="text-[15px] font-semibold text-ink">
+                {modal.mode === "create" ? "Create event" : "Edit event"}
               </span>
               <button
+                type="button"
                 onClick={() => setModal(DEFAULT_MODAL_STATE)}
-                className="text-[#8b8f98] hover:text-[#f3f4f6] text-sm p-1"
+                aria-label="Close modal"
+                className="grid size-7 place-items-center rounded-lg text-ink-2 transition hover:bg-active hover:text-ink"
               >
-                ✕
+                <X className="size-4" />
               </button>
             </div>
 
-            <div className="p-5 space-y-4 text-xs">
+            <div className="space-y-4 p-5 text-[13px]">
               {modal.error && (
-                <div className="p-3 bg-red-950/40 border border-red-800 text-red-300 rounded-lg text-xs leading-relaxed">
+                <div className="rounded-xl border border-rose-800/70 bg-rose-950/30 p-3 text-[12.5px] leading-relaxed text-rose-200">
                   {modal.error}
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider mb-1.5">
+                <label className="mb-1.5 block text-[12px] font-semibold tracking-wide text-ink-2">
                   Title
                 </label>
                 <input
@@ -552,14 +665,14 @@ export function CalendarView() {
                     setModal((prev) => ({ ...prev, title: e.target.value }))
                   }
                   placeholder="Event title"
-                  className="w-full bg-[#131417] border border-[#22242a] rounded-lg px-3.5 py-2 text-sm text-[#f3f4f6] outline-none focus:border-[#3b82f6] transition-colors"
+                  className="h-10 w-full rounded-xl border border-line bg-surface px-3.5 text-[14px] text-ink outline-none transition placeholder:text-ink-4 focus:border-calendar"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider mb-1.5">
-                    Start Time
+                  <label className="mb-1.5 block text-[12px] font-semibold tracking-wide text-ink-2">
+                    Start time
                   </label>
                   <input
                     type="datetime-local"
@@ -570,12 +683,12 @@ export function CalendarView() {
                         startTime: e.target.value,
                       }))
                     }
-                    className="w-full bg-[#131417] border border-[#22242a] rounded-lg px-3 py-2 text-xs text-[#f3f4f6] outline-none focus:border-[#3b82f6] font-mono transition-colors"
+                    className="h-10 w-full rounded-xl border border-line bg-surface px-3 font-mono text-[12.5px] text-ink outline-none transition focus:border-calendar"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#8b8f98] uppercase tracking-wider mb-1.5">
-                    End Time
+                  <label className="mb-1.5 block text-[12px] font-semibold tracking-wide text-ink-2">
+                    End time
                   </label>
                   <input
                     type="datetime-local"
@@ -583,13 +696,13 @@ export function CalendarView() {
                     onChange={(e) =>
                       setModal((prev) => ({ ...prev, endTime: e.target.value }))
                     }
-                    className="w-full bg-[#131417] border border-[#22242a] rounded-lg px-3 py-2 text-xs text-[#f3f4f6] outline-none focus:border-[#3b82f6] font-mono transition-colors"
+                    className="h-10 w-full rounded-xl border border-line bg-surface px-3 font-mono text-[12.5px] text-ink outline-none transition focus:border-calendar"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center space-x-5 text-sm">
-                <label className="flex items-center space-x-2 cursor-pointer">
+              <div className="flex items-center gap-5 pt-0.5 text-[13px]">
+                <label className="flex cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
                     checked={modal.allDay}
@@ -599,13 +712,13 @@ export function CalendarView() {
                         allDay: e.target.checked,
                       }))
                     }
-                    className="rounded border-[#22242a] bg-[#131417]"
+                    className="size-4 rounded border-line bg-surface accent-calendar"
                   />
-                  <span className="text-xs text-[#8b8f98]">All-day event</span>
+                  <span className="text-[13px] text-ink-2">All-day event</span>
                 </label>
 
                 {modal.mode === "create" && (
-                  <label className="flex items-center space-x-2 cursor-pointer">
+                  <label className="flex cursor-pointer items-center gap-2">
                     <input
                       type="checkbox"
                       checked={modal.isRecurring}
@@ -615,9 +728,9 @@ export function CalendarView() {
                           isRecurring: e.target.checked,
                         }))
                       }
-                      className="rounded border-[#22242a] bg-[#131417]"
+                      className="size-4 rounded border-line bg-surface accent-calendar"
                     />
-                    <span className="text-xs text-[#8b8f98]">Repeat</span>
+                    <span className="text-[13px] text-ink-2">Repeat</span>
                   </label>
                 )}
               </div>
@@ -724,8 +837,10 @@ export function CalendarView() {
 
               {/* Color Tag Picker */}
               <div>
-                <label className="block text-[#8b8f98] mb-1">Color Tag</label>
-                <div className="flex items-center space-x-2">
+                <label className="mb-1.5 block text-[12px] font-semibold tracking-wide text-ink-2">
+                  Color tag
+                </label>
+                <div className="flex items-center gap-2.5">
                   {COLOR_OPTIONS.map((c) => (
                     <button
                       key={c.value}
@@ -733,9 +848,10 @@ export function CalendarView() {
                       onClick={() =>
                         setModal((prev) => ({ ...prev, color: c.value }))
                       }
-                      className={`w-5 h-5 rounded-full border-2 transition-transform ${
+                      aria-label={c.label}
+                      className={`size-5 rounded-full border-2 transition-transform ${
                         modal.color === c.value
-                          ? "border-white scale-110"
+                          ? "scale-110 border-white"
                           : "border-transparent opacity-75 hover:opacity-100"
                       }`}
                       style={{ backgroundColor: c.value }}
@@ -746,7 +862,9 @@ export function CalendarView() {
               </div>
 
               <div>
-                <label className="block text-[#8b8f98] mb-1">Description</label>
+                <label className="mb-1.5 block text-[12px] font-semibold tracking-wide text-ink-2">
+                  Description
+                </label>
                 <textarea
                   rows={2}
                   value={modal.description}
@@ -756,18 +874,18 @@ export function CalendarView() {
                       description: e.target.value,
                     }))
                   }
-                  placeholder="Notes, location, or details..."
-                  className="w-full bg-[#131417] border border-[#22242a] rounded px-2.5 py-1.5 text-[#f3f4f6] outline-none focus:border-[#3b82f6] resize-none"
+                  placeholder="Notes, location, or details…"
+                  className="w-full resize-none rounded-xl border border-line bg-surface px-3.5 py-2 text-[13.5px] text-ink outline-none transition placeholder:text-ink-4 focus:border-calendar"
                 />
               </div>
             </div>
 
-            <div className="px-4 py-3 border-t border-[#22242a] bg-[#131417] flex items-center justify-between">
+            <div className="flex items-center justify-between border-t border-line bg-surface px-5 py-3.5">
               {modal.mode === "edit" ? (
                 <button
                   type="button"
                   onClick={handleDeleteModal}
-                  className="px-3 py-1.5 bg-red-950/60 hover:bg-red-900 border border-red-800 text-red-300 rounded text-xs transition-colors"
+                  className="h-9 rounded-xl border border-rose-800/70 bg-rose-950/40 px-3.5 text-[13px] font-medium text-rose-200 transition hover:bg-rose-950/70"
                 >
                   Delete
                 </button>
@@ -775,18 +893,18 @@ export function CalendarView() {
                 <div />
               )}
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setModal(DEFAULT_MODAL_STATE)}
-                  className="px-3 py-1.5 text-[#8b8f98] hover:text-[#f3f4f6] text-xs transition-colors"
+                  className="h-9 rounded-xl px-3.5 text-[13px] font-medium text-ink-2 transition hover:bg-active hover:text-ink"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveModal}
-                  className="px-3.5 py-1.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded text-xs font-medium transition-colors"
+                  className="h-9 rounded-xl bg-calendar px-4 text-[13px] font-semibold text-white transition hover:bg-calendar-hover"
                 >
                   Save
                 </button>

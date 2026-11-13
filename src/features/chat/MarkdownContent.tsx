@@ -1,50 +1,43 @@
 import ReactMarkdown from "react-markdown";
+import { cn } from "../../core/cn";
 
 export interface MarkdownContentProps {
   content: string;
   className?: string;
 }
 
-export function MarkdownContent({ content, className = "" }: MarkdownContentProps) {
+export function MarkdownContent({ content, className }: MarkdownContentProps) {
   return (
-    <div className={`text-sm leading-relaxed text-[#f3f4f6] ${className}`}>
+    <div className={cn("text-[15.5px] leading-[1.7] text-ink", className)}>
       <ReactMarkdown
         components={{
           p: ({ children }) => (
-            <p className="mb-2.5 last:mb-0 leading-relaxed text-[#f3f4f6]">
-              {children}
-            </p>
+            <p className="mb-2.5 last:mb-0 leading-[1.7] text-ink">{children}</p>
           ),
           h1: ({ children }) => (
-            <h1 className="text-base font-semibold text-[#f3f4f6] mt-3.5 mb-2 first:mt-0 tracking-tight">
+            <h1 className="mt-4 mb-2 first:mt-0 font-display text-[20px] font-medium tracking-tight text-ink">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-sm font-semibold text-[#f3f4f6] mt-3 mb-1.5 first:mt-0 tracking-tight">
+            <h2 className="mt-3.5 mb-1.5 first:mt-0 text-[16px] font-semibold tracking-tight text-ink">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-[13px] font-semibold text-[#f3f4f6] mt-2 mb-1 first:mt-0">
+            <h3 className="mt-2.5 mb-1 first:mt-0 text-[14.5px] font-semibold text-ink">
               {children}
             </h3>
           ),
           ul: ({ children }) => (
-            <ul className="list-disc pl-5 mb-2.5 space-y-1 text-[#f3f4f6]">
-              {children}
-            </ul>
+            <ul className="mb-2.5 list-disc space-y-1 pl-5 text-ink">{children}</ul>
           ),
           ol: ({ children }) => (
-            <ol className="list-decimal pl-5 mb-2.5 space-y-1 text-[#f3f4f6]">
-              {children}
-            </ol>
+            <ol className="mb-2.5 list-decimal space-y-1 pl-5 text-ink">{children}</ol>
           ),
-          li: ({ children }) => (
-            <li className="leading-relaxed">{children}</li>
-          ),
+          li: ({ children }) => <li className="leading-[1.7]">{children}</li>,
           blockquote: ({ children }) => (
-            <blockquote className="border-l-2 border-[#3b82f6] pl-3 my-2 text-[#8b8f98] italic">
+            <blockquote className="my-2.5 border-l-2 border-calendar pl-3.5 text-ink-2 italic">
               {children}
             </blockquote>
           ),
@@ -52,24 +45,24 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
             const isCodeBlock = Boolean(codeClassName);
             if (!isCodeBlock) {
               return (
-                <code className="bg-[#1c1e24] text-[#93c5fd] px-1.5 py-0.5 rounded font-mono text-[12px] border border-[#22242a]">
+                <code className="rounded-md border border-line bg-sunken px-1.5 py-0.5 font-mono text-[12.5px] text-calendar-fg">
                   {children}
                 </code>
               );
             }
             return (
-              <pre className="bg-[#131417] border border-[#22242a] rounded-lg p-3 my-2.5 overflow-x-auto text-[13px] font-mono text-[#f3f4f6] leading-normal">
+              <pre className="my-3 overflow-x-auto rounded-xl border border-line bg-surface p-3.5 font-mono text-[13px] leading-normal text-ink">
                 <code>{children}</code>
               </pre>
             );
           },
-          hr: () => <hr className="border-[#22242a] my-3" />,
+          hr: () => <hr className="my-3.5 border-line" />,
           a: ({ href, children }) => (
             <a
               href={href}
               target="_blank"
               rel="noreferrer"
-              className="text-[#3b82f6] hover:underline"
+              className="text-calendar-fg underline decoration-calendar/40 underline-offset-2 hover:decoration-calendar"
             >
               {children}
             </a>
