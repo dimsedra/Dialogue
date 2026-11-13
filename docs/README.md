@@ -15,4 +15,4 @@ This directory serves as the shared memory on disk for the Dialogue project.
 
 ## Design (`docs/design/`)
 
-- [brand.md](./design/brand.md) — Brand Design Single Source of Truth: Carbon Black + Dark Grey palette, Geist typography, sharper workspace-style component radii, flexible three-panel desktop layout, Raycast-like floating Quick Command overlay, and `@ai-sdk/react` streaming/tool-invocation UI patterns.
+- [brand.md](./design/brand.md) — Brand Design Single Source of Truth: Carbon Black + Dark Grey palette preserved with bundled `Figtree Variable` and `Fraunces Variable` typography, softer `rounded-xl`/`rounded-2xl` geometry, collapsible three-panel layout (`Sidebar`, centered `ChatPanel`, `QuickLook` four-pillar drawer), Quick Command / FullCalendar / Settings integration, and structured `@ai-sdk/react` chat & `EventCard` UI patterns.
